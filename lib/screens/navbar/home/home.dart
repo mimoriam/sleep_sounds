@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../../utils/app_colors.dart';
 import '../../../utils/app_themes.dart';
+import '../favourite/favourite.dart';
+import 'widgets/sound_playing.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -66,109 +68,127 @@ class HomeScreen extends StatelessWidget {
               const SizedBox(height: 28),
 
               // Featured Card ("Tonight's Best Sleep Sound")
-              ClipRRect(
-                borderRadius: BorderRadius.circular(20),
-                child: SizedBox(
-                  height: 200,
-                  width: double.infinity,
-                  child: Stack(
-                    fit: StackFit.expand,
-                    children: [
-                      // Image with fallback
-                      Image.asset(
-                        'assets/images/forest_night.png',
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) {
-                          return Container(
-                            decoration: const BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: [Color(0xFF151C2C), Color(0xFF0B101E)],
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                              ),
-                            ),
-                            child: const Center(
-                              child: Icon(
-                                Icons.nights_stay_outlined,
-                                color: AppColors.primaryCyan,
-                                size: 48,
-                              ),
-                            ),
-                          );
-                        },
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const SoundPlaying(
+                        title: 'Forest Night',
+                        subtitle: 'Peaceful woodland ambience',
+                        imagePath: 'assets/images/forest_night.png',
+                        fallbackIcon: Icons.nights_stay_outlined,
                       ),
-                      // Gradient Overlay for Readability
-                      Container(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [
-                              Colors.black.withValues(alpha: 0.3),
-                              Colors.transparent,
-                              Colors.black.withValues(alpha: 0.7),
-                            ],
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
+                    ),
+                  );
+                },
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(20),
+                  child: SizedBox(
+                    height: 200,
+                    width: double.infinity,
+                    child: Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        // Image with fallback
+                        Image.asset(
+                          'assets/images/forest_night.png',
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Container(
+                              decoration: const BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: [
+                                    Color(0xFF151C2C),
+                                    Color(0xFF0B101E),
+                                  ],
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                ),
+                              ),
+                              child: const Center(
+                                child: Icon(
+                                  Icons.nights_stay_outlined,
+                                  color: AppColors.primaryCyan,
+                                  size: 48,
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                        // Gradient Overlay for Readability
+                        Container(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                Colors.black.withValues(alpha: 0.3),
+                                Colors.transparent,
+                                Colors.black.withValues(alpha: 0.7),
+                              ],
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                            ),
                           ),
                         ),
-                      ),
-                      // Content
-                      Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                mainAxisAlignment: MainAxisAlignment.end,
-                                children: [
-                                  const Text(
-                                    "Tonight's Best Sleep Sound",
-                                    style: TextStyle(
-                                      color: AppColors.primaryCyan,
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 6),
-                                  const Text(
-                                    "Forest Night",
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 22,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    "Peaceful woodland ambience",
-                                    style: TextStyle(
-                                      color: Colors.white.withValues(
-                                        alpha: 0.7,
+                        // Content
+                        Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisAlignment: MainAxisAlignment.end,
+                                  children: [
+                                    const Text(
+                                      "Tonight's Best Sleep Sound",
+                                      style: TextStyle(
+                                        color: AppColors.primaryCyan,
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w600,
                                       ),
-                                      fontSize: 13,
                                     ),
-                                  ),
-                                ],
+                                    const SizedBox(height: 6),
+                                    const Text(
+                                      "Forest Night",
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 22,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      "Peaceful woodland ambience",
+                                      style: TextStyle(
+                                        color: Colors.white.withValues(
+                                          alpha: 0.7,
+                                        ),
+                                        fontSize: 13,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
-                            ),
-                            // Play Button
-                            Container(
-                              width: 48,
-                              height: 48,
-                              decoration: const BoxDecoration(
-                                shape: BoxShape.circle,
-                                gradient: AppColors.activeSliderGradient,
+                              // Play Button
+                              Container(
+                                width: 48,
+                                height: 48,
+                                decoration: const BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  gradient: AppColors.activeSliderGradient,
+                                ),
+                                child: const Icon(
+                                  Icons.play_arrow,
+                                  color: Colors.white,
+                                  size: 28,
+                                ),
                               ),
-                              child: const Icon(
-                                Icons.play_arrow,
-                                color: Colors.white,
-                                size: 28,
-                              ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -188,7 +208,7 @@ class HomeScreen extends StatelessWidget {
                   ),
                   TextButton(
                     onPressed: () {
-                      // Navigate to all popular sounds
+                      TabSwitchNotification(1).dispatch(context);
                     },
                     style: TextButton.styleFrom(
                       padding: EdgeInsets.zero,
@@ -285,7 +305,7 @@ class HomeScreen extends StatelessWidget {
                     SoundCard(
                       title: 'Thunders',
                       subtitle: 'Deep thunder rumbles',
-                      imagePath: 'assets/images/thunders.png',
+                      imagePath: 'assets/images/thunder.png',
                       width: 130,
                       height: 150,
                       titleSize: 14,
@@ -402,6 +422,27 @@ class SoundCard extends StatelessWidget {
                     ),
                   ),
                 ],
+              ),
+            ),
+            // Material Splash Inkwell
+            Positioned.fill(
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => SoundPlaying(
+                          title: title,
+                          subtitle: subtitle,
+                          imagePath: imagePath,
+                          fallbackIcon: fallbackIcon,
+                        ),
+                      ),
+                    );
+                  },
+                ),
               ),
             ),
           ],

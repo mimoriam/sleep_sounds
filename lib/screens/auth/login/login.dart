@@ -242,9 +242,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: AppColors.primaryCyan.withValues(
-                          alpha: 0.3,
-                        ),
+                        color: AppColors.primaryCyan.withValues(alpha: 0.3),
                         blurRadius: 12,
                         offset: const Offset(0, 4),
                       ),
@@ -283,15 +281,11 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                     Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
                       child: Text(
                         'or',
                         style: TextStyle(
-                          color: AppColors.textSecondary.withValues(
-                            alpha: 0.8,
-                          ),
+                          color: AppColors.textSecondary.withValues(alpha: 0.8),
                           fontSize: 14,
                         ),
                       ),
