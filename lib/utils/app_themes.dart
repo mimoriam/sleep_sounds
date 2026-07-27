@@ -16,7 +16,7 @@ class AppThemes {
       brightness: Brightness.dark,
       scaffoldBackgroundColor: AppColors.backgroundDark,
       primaryColor: AppColors.primaryCyan,
-      fontFamily: 'Inter', // Recommended sans-serif font for this design
+      fontFamily: 'Inter',
 
       colorScheme: const ColorScheme.dark(
         primary: AppColors.primaryCyan,
@@ -25,7 +25,6 @@ class AppThemes {
         error: AppColors.errorRed,
       ),
 
-      // Typography
       textTheme: const TextTheme(
         displayLarge: TextStyle(
           color: AppColors.textPrimary,
@@ -36,7 +35,7 @@ class AppThemes {
           color: AppColors.textPrimary,
           fontSize: 24,
           fontWeight: FontWeight.w700,
-        ), // Screen titles
+        ),
         titleLarge: TextStyle(
           color: AppColors.textPrimary,
           fontSize: 20,
@@ -46,12 +45,12 @@ class AppThemes {
           color: AppColors.textPrimary,
           fontSize: 16,
           fontWeight: FontWeight.w500,
-        ), // Standard text
+        ),
         bodyMedium: TextStyle(
           color: AppColors.textSecondary,
           fontSize: 14,
           fontWeight: FontWeight.w400,
-        ), // Subtitles
+        ),
         labelSmall: TextStyle(
           color: AppColors.textSecondary,
           fontSize: 12,
@@ -59,7 +58,6 @@ class AppThemes {
         ),
       ),
 
-      // App Bar
       appBarTheme: const AppBarTheme(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -72,17 +70,12 @@ class AppThemes {
         ),
       ),
 
-      // Elevated Buttons (Gradient buttons handled separately via custom widgets, but base styling is here)
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor:
-              Colors.transparent, // Transparent to allow Ink/Gradients
+          backgroundColor: Colors.transparent,
           shadowColor: Colors.transparent,
           foregroundColor: AppColors.textPrimary,
-          minimumSize: const Size(
-            double.infinity,
-            56,
-          ), // Full-width standard button
+          minimumSize: const Size(double.infinity, 56),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(borderRadiusButton),
           ),
@@ -90,7 +83,6 @@ class AppThemes {
         ),
       ),
 
-      // Input Decoration (Text Fields)
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: AppColors.cardColor,
@@ -119,7 +111,6 @@ class AppThemes {
         ),
       ),
 
-      // Cards (Settings, Now Playing items)
       cardTheme: CardThemeData(
         color: AppColors.cardColor,
         elevation: 0,
@@ -129,9 +120,8 @@ class AppThemes {
         ),
       ),
 
-      // Bottom Navigation Bar
       bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-        backgroundColor: AppColors.backgroundDark, // Blends with background
+        backgroundColor: AppColors.backgroundDark,
         selectedItemColor: AppColors.primaryCyan,
         unselectedItemColor: AppColors.textSecondary,
         showUnselectedLabels: true,
@@ -141,54 +131,124 @@ class AppThemes {
     );
   }
 
-  // --- LIGHT THEME (Fallback/Secondary) ---
+  // --- LIGHT THEME ---
   static ThemeData get lightTheme {
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.light,
-      scaffoldBackgroundColor: const Color(0xFFF5F7FA), // Soft light background
+      scaffoldBackgroundColor: AppColors.backgroundLight,
       primaryColor: AppColors.primaryCyan,
       fontFamily: 'Inter',
 
       colorScheme: const ColorScheme.light(
         primary: AppColors.primaryCyan,
         secondary: AppColors.primaryBlue,
-        surface: Color(0xFFF5F7FA),
+        surface: AppColors.backgroundLight,
         error: AppColors.errorRed,
       ),
 
       textTheme: const TextTheme(
+        displayLarge: TextStyle(
+          color: AppColors.textPrimaryLight,
+          fontSize: 32,
+          fontWeight: FontWeight.bold,
+        ),
         headlineMedium: TextStyle(
-          color: AppColors.textDark,
+          color: AppColors.textPrimaryLight,
           fontSize: 24,
           fontWeight: FontWeight.w700,
         ),
+        titleLarge: TextStyle(
+          color: AppColors.textPrimaryLight,
+          fontSize: 20,
+          fontWeight: FontWeight.w600,
+        ),
         bodyLarge: TextStyle(
-          color: AppColors.textDark,
+          color: AppColors.textPrimaryLight,
           fontSize: 16,
           fontWeight: FontWeight.w500,
         ),
         bodyMedium: TextStyle(
-          color: Color(0xFF64748B),
+          color: AppColors.textSecondaryLight,
           fontSize: 14,
+          fontWeight: FontWeight.w400,
+        ),
+        labelSmall: TextStyle(
+          color: AppColors.textSecondaryLight,
+          fontSize: 12,
           fontWeight: FontWeight.w400,
         ),
       ),
 
-      // Standardize input, button, and card shapes to match dark theme structure
-      inputDecorationTheme: darkTheme.inputDecorationTheme.copyWith(
-        fillColor: Colors.white,
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(borderRadiusInput),
-          borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+      appBarTheme: const AppBarTheme(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        centerTitle: true,
+        iconTheme: IconThemeData(color: AppColors.textPrimaryLight),
+        titleTextStyle: TextStyle(
+          color: AppColors.textPrimaryLight,
+          fontSize: 20,
+          fontWeight: FontWeight.w600,
         ),
       ),
-      cardTheme: darkTheme.cardTheme.copyWith(
-        color: Colors.white,
+
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.transparent,
+          shadowColor: Colors.transparent,
+          foregroundColor: AppColors.textPrimaryLight,
+          minimumSize: const Size(double.infinity, 56),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(borderRadiusButton),
+          ),
+          textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+        ),
+      ),
+
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: AppColors.cardColorLight,
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 20,
+          vertical: 18,
+        ),
+        hintStyle: const TextStyle(
+          color: AppColors.textSecondaryLight,
+          fontSize: 14,
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(borderRadiusInput),
+          borderSide: const BorderSide(color: AppColors.borderLightMode),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(borderRadiusInput),
+          borderSide: const BorderSide(
+            color: AppColors.primaryCyan,
+            width: 1.5,
+          ),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(borderRadiusInput),
+          borderSide: const BorderSide(color: AppColors.errorRed, width: 1.5),
+        ),
+      ),
+
+      cardTheme: CardThemeData(
+        color: AppColors.cardColorLight,
+        elevation: 0,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(borderRadiusCard),
-          side: const BorderSide(color: Color(0xFFE2E8F0), width: 1),
+          side: const BorderSide(color: AppColors.borderLightMode, width: 1),
         ),
+      ),
+
+      bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+        backgroundColor: AppColors.backgroundLight,
+        selectedItemColor: AppColors.primaryCyan,
+        unselectedItemColor: AppColors.textSecondaryLight,
+        showUnselectedLabels: true,
+        type: BottomNavigationBarType.fixed,
+        elevation: 0,
       ),
     );
   }

@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../providers/settings_provider.dart';
+import '../../services/permission_service.dart';
 import '../../utils/app_colors.dart';
 import '../../utils/app_themes.dart';
-import '../auth/login/login.dart';
+import '../navbar/navbar.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -45,15 +48,20 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     }
   }
 
-  void _finishOnboarding() {
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (context) => const LoginScreen()),
+  Future<void> _finishOnboarding() async {
+    await PermissionService.requestNotificationPermission();
+    if (!mounted) return;
+    context.read<SettingsProvider>().completeOnboarding();
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (context) => const Navbar()),
+      (route) => false,
     );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.background(context),
       body: SafeArea(
         child: Column(
           children: [
@@ -67,19 +75,19 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   IconButton(
-                    icon: const Icon(
+                    icon: Icon(
                       Icons.arrow_back,
-                      color: AppColors.textPrimary,
+                      color: AppColors.text(context),
                     ),
                     onPressed: _previousPage,
                   ),
                   if (_currentPage < 3)
                     TextButton(
                       onPressed: _finishOnboarding,
-                      child: const Text(
+                      child: Text(
                         'Skip',
                         style: TextStyle(
-                          color: AppColors.textSecondary,
+                          color: AppColors.textMuted(context),
                           fontSize: 16,
                           fontWeight: FontWeight.w500,
                         ),
@@ -128,7 +136,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
                   // Action Button
                   GradientButton(
-                    text: _currentPage == 3 ? 'Get Start' : 'Continue',
+                    text: _currentPage == 3 ? 'Get Started' : 'Continue',
                     gradient: (_currentPage == 2 || _currentPage == 3)
                         ? AppColors.activeSliderGradient
                         : AppColors.primaryButtonGradient,

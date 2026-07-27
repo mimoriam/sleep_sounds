@@ -1,0 +1,521 @@
+import 'package:flutter/material.dart';
+import 'sound_category.dart';
+
+class SoundType {
+  final String id;
+  final String title;
+  final String description;
+  final SoundCategory category;
+  final IconData icon;
+  final String? imagePath;
+  final int variantCount;
+  final List<String> audioAssetPaths;
+
+  const SoundType({
+    required this.id,
+    required this.title,
+    required this.description,
+    required this.category,
+    required this.icon,
+    this.imagePath,
+    required this.variantCount,
+    required this.audioAssetPaths,
+  });
+}
+
+class SoundRegistry {
+  static const List<SoundType> allSounds = [
+    // --- NATURE ---
+    SoundType(
+      id: 'wave',
+      title: 'Ocean Waves',
+      description: 'Calming shore tides & rhythmic waves',
+      category: SoundCategory.nature,
+      icon: Icons.waves_rounded,
+      imagePath: 'assets/images/ocean_waves.png',
+      variantCount: 6,
+      audioAssetPaths: [
+        'assets/sounds/wave_1.opus',
+        'assets/sounds/wave_2.opus',
+        'assets/sounds/wave_3.opus',
+        'assets/sounds/wave_4.opus',
+        'assets/sounds/wave_5.opus',
+        'assets/sounds/wave_6.opus',
+      ],
+    ),
+    SoundType(
+      id: 'frog',
+      title: 'Night Frogs',
+      description: 'Peaceful pond croaks under the stars',
+      category: SoundCategory.nature,
+      icon: Icons.eco_outlined,
+      imagePath: 'assets/images/forest_night.png',
+      variantCount: 6,
+      audioAssetPaths: [
+        'assets/sounds/frog_1.opus',
+        'assets/sounds/frog_2.opus',
+        'assets/sounds/frog_3.opus',
+        'assets/sounds/frog_4.opus',
+        'assets/sounds/frog_5.opus',
+        'assets/sounds/frog_6.opus',
+      ],
+    ),
+    SoundType(
+      id: 'cat',
+      title: 'Cat Purring',
+      description: 'Gentle rhythmic purrs for cozy sleep',
+      category: SoundCategory.nature,
+      icon: Icons.pets_rounded,
+      imagePath: 'assets/images/birds_chirping.png',
+      variantCount: 6,
+      audioAssetPaths: [
+        'assets/sounds/cat_1.opus',
+        'assets/sounds/cat_2.opus',
+        'assets/sounds/cat_3.opus',
+        'assets/sounds/cat_4.opus',
+        'assets/sounds/cat_5.opus',
+        'assets/sounds/cat_6.opus',
+      ],
+    ),
+    SoundType(
+      id: 'horse',
+      title: 'Countryside Trails',
+      description: 'Rhythmic hoofbeats on soft trail',
+      category: SoundCategory.nature,
+      icon: Icons.landscape_rounded,
+      imagePath: 'assets/images/forest_night.png',
+      variantCount: 6,
+      audioAssetPaths: [
+        'assets/sounds/horse_1.opus',
+        'assets/sounds/horse_2.opus',
+        'assets/sounds/horse_3.opus',
+        'assets/sounds/horse_4.opus',
+        'assets/sounds/horse_5.opus',
+        'assets/sounds/horse_6.opus',
+      ],
+    ),
+
+    // --- RAIN ---
+    SoundType(
+      id: 'rain',
+      title: 'Soft Rain',
+      description: 'Gentle rainfall on leaves & roof',
+      category: SoundCategory.rain,
+      icon: Icons.umbrella_outlined,
+      imagePath: 'assets/images/soft_rain.png',
+      variantCount: 6,
+      audioAssetPaths: [
+        'assets/sounds/rain_1.opus',
+        'assets/sounds/rain_2.opus',
+        'assets/sounds/rain_3.opus',
+        'assets/sounds/rain_4.opus',
+        'assets/sounds/rain_5.opus',
+        'assets/sounds/rain_6.opus',
+      ],
+    ),
+    SoundType(
+      id: 'washing',
+      title: 'Washing Machine',
+      description: 'Soothing low white rumble',
+      category: SoundCategory.rain,
+      icon: Icons.water_drop_outlined,
+      imagePath: 'assets/images/soft_rain.png',
+      variantCount: 6,
+      audioAssetPaths: [
+        'assets/sounds/washing_1.opus',
+        'assets/sounds/washing_2.opus',
+        'assets/sounds/washing_3.opus',
+        'assets/sounds/washing_4.opus',
+        'assets/sounds/washing_5.opus',
+        'assets/sounds/washing_6.opus',
+      ],
+    ),
+    SoundType(
+      id: 'flush',
+      title: 'Water Stream',
+      description: 'Continuous smooth water flow',
+      category: SoundCategory.rain,
+      icon: Icons.water_rounded,
+      imagePath: 'assets/images/ocean_waves.png',
+      variantCount: 6,
+      audioAssetPaths: [
+        'assets/sounds/flush_1.opus',
+        'assets/sounds/flush_2.opus',
+        'assets/sounds/flush_3.opus',
+        'assets/sounds/flush_4.opus',
+        'assets/sounds/flush_5.opus',
+        'assets/sounds/flush_6.opus',
+      ],
+    ),
+
+    // --- WHITE NOISE ---
+    SoundType(
+      id: 'fan',
+      title: 'Room Fan',
+      description: 'Consistent cooling breeze sound',
+      category: SoundCategory.whiteNoise,
+      icon: Icons.mode_fan_off_outlined,
+      imagePath: 'assets/images/thunder.png',
+      variantCount: 6,
+      audioAssetPaths: [
+        'assets/sounds/fan_1.opus',
+        'assets/sounds/fan_2.opus',
+        'assets/sounds/fan_3.opus',
+        'assets/sounds/fan_4.opus',
+        'assets/sounds/fan_5.opus',
+        'assets/sounds/fan_6.opus',
+      ],
+    ),
+    SoundType(
+      id: 'machine-fan',
+      title: 'Box Fan',
+      description: 'Heavy steady fan hum',
+      category: SoundCategory.whiteNoise,
+      icon: Icons.toys_outlined,
+      imagePath: 'assets/images/thunder.png',
+      variantCount: 6,
+      audioAssetPaths: [
+        'assets/sounds/machine-fan_1.opus',
+        'assets/sounds/machine-fan_2.opus',
+        'assets/sounds/machine-fan_3.opus',
+        'assets/sounds/machine-fan_4.opus',
+        'assets/sounds/machine-fan_5.opus',
+        'assets/sounds/machine-fan_6.opus',
+      ],
+    ),
+    SoundType(
+      id: 'noise',
+      title: 'Deep Static',
+      description: 'Pure static frequency for masking noise',
+      category: SoundCategory.whiteNoise,
+      icon: Icons.blur_on_rounded,
+      imagePath: 'assets/images/thunder.png',
+      variantCount: 6,
+      audioAssetPaths: [
+        'assets/sounds/noise_1.opus',
+        'assets/sounds/noise_2.opus',
+        'assets/sounds/noise_3.opus',
+        'assets/sounds/noise_4.opus',
+        'assets/sounds/noise_5.opus',
+        'assets/sounds/noise_6.opus',
+      ],
+    ),
+
+    // --- SLEEP MUSIC ---
+    SoundType(
+      id: 'sleeping_tone',
+      title: 'Deep Sleep Tone',
+      description: 'Ambient synth pads tuned for rest',
+      category: SoundCategory.sleepMusic,
+      icon: Icons.nightlight_round,
+      imagePath: 'assets/images/forest_night.png',
+      variantCount: 6,
+      audioAssetPaths: [
+        'assets/sounds/sleeping_tone_1.opus',
+        'assets/sounds/sleeping_tone_2.opus',
+        'assets/sounds/sleeping_tone_3.opus',
+        'assets/sounds/sleeping_tone_4.opus',
+        'assets/sounds/sleeping_tone_5.opus',
+        'assets/sounds/sleeping_tone_6.opus',
+      ],
+    ),
+    SoundType(
+      id: 'relaxing_tone',
+      title: 'Relaxation Melodies',
+      description: 'Soft harmonic chimes & drones',
+      category: SoundCategory.sleepMusic,
+      icon: Icons.music_note_rounded,
+      imagePath: 'assets/images/fireplace.png',
+      variantCount: 6,
+      audioAssetPaths: [
+        'assets/sounds/relaxing_tone_1.opus',
+        'assets/sounds/relaxing_tone_2.opus',
+        'assets/sounds/relaxing_tone_3.opus',
+        'assets/sounds/relaxing_tone_4.opus',
+        'assets/sounds/relaxing_tone_5.opus',
+        'assets/sounds/relaxing_tone_6.opus',
+      ],
+    ),
+    SoundType(
+      id: 'midnight',
+      title: 'Midnight Serenity',
+      description: 'Lullaby vibes for quiet night hours',
+      category: SoundCategory.sleepMusic,
+      icon: Icons.dark_mode_outlined,
+      imagePath: 'assets/images/forest_night.png',
+      variantCount: 6,
+      audioAssetPaths: [
+        'assets/sounds/midnight_1.opus',
+        'assets/sounds/midnight_2.opus',
+        'assets/sounds/midnight_3.opus',
+        'assets/sounds/midnight_4.opus',
+        'assets/sounds/midnight_5.opus',
+        'assets/sounds/midnight_6.opus',
+      ],
+    ),
+    SoundType(
+      id: 'happy_day',
+      title: 'Warm Dreams',
+      description: 'Uplifting soft ambient acoustic warmth',
+      category: SoundCategory.sleepMusic,
+      icon: Icons.wb_sunny_outlined,
+      imagePath: 'assets/images/birds_chirping.png',
+      variantCount: 6,
+      audioAssetPaths: [
+        'assets/sounds/happy_day_1.opus',
+        'assets/sounds/happy_day_2.opus',
+        'assets/sounds/happy_day_3.opus',
+        'assets/sounds/happy_day_4.opus',
+        'assets/sounds/happy_day_5.opus',
+        'assets/sounds/happy_day_6.opus',
+      ],
+    ),
+    SoundType(
+      id: 'olo',
+      title: 'Peaceful Chords',
+      description: 'Minimalist ambient drone layers',
+      category: SoundCategory.sleepMusic,
+      icon: Icons.graphic_eq_outlined,
+      imagePath: 'assets/images/fireplace.png',
+      variantCount: 6,
+      audioAssetPaths: [
+        'assets/sounds/olo_1.opus',
+        'assets/sounds/olo_2.opus',
+        'assets/sounds/olo_3.opus',
+        'assets/sounds/olo_4.opus',
+        'assets/sounds/olo_5.opus',
+        'assets/sounds/olo_6.opus',
+      ],
+    ),
+
+    // --- AMBIENT ---
+    SoundType(
+      id: 'fire-sounds',
+      title: 'Fireplace Crackle',
+      description: 'Cozy hearth fire with gentle crackles',
+      category: SoundCategory.ambient,
+      icon: Icons.local_fire_department_outlined,
+      imagePath: 'assets/images/fireplace.png',
+      variantCount: 9,
+      audioAssetPaths: [
+        'assets/sounds/fire-sounds_1.opus',
+        'assets/sounds/fire-sounds_2.opus',
+        'assets/sounds/fire-sounds_3.opus',
+        'assets/sounds/fire-sounds_4.opus',
+        'assets/sounds/fire-sounds_5.opus',
+        'assets/sounds/fire-sounds_6.opus',
+        'assets/sounds/fire-sounds_7.opus',
+        'assets/sounds/fire-sounds_8.opus',
+        'assets/sounds/fire-sounds_9.opus',
+      ],
+    ),
+    SoundType(
+      id: 'clock',
+      title: 'Clock Ticking',
+      description: 'Rhythmic pendulum clock tick-tock',
+      category: SoundCategory.ambient,
+      icon: Icons.access_time_rounded,
+      imagePath: 'assets/images/thunder.png',
+      variantCount: 6,
+      audioAssetPaths: [
+        'assets/sounds/clock_1.opus',
+        'assets/sounds/clock_2.opus',
+        'assets/sounds/clock_3.opus',
+        'assets/sounds/clock_4.opus',
+        'assets/sounds/clock_5.opus',
+        'assets/sounds/clock_6.opus',
+      ],
+    ),
+    SoundType(
+      id: 'coal',
+      title: 'Embers & Coal',
+      description: 'Subtle glowing ember fizzle',
+      category: SoundCategory.ambient,
+      icon: Icons.fireplace_rounded,
+      imagePath: 'assets/images/fireplace.png',
+      variantCount: 6,
+      audioAssetPaths: [
+        'assets/sounds/coal_1.opus',
+        'assets/sounds/coal_2.opus',
+        'assets/sounds/coal_3.opus',
+        'assets/sounds/coal_4.opus',
+        'assets/sounds/coal_5.opus',
+        'assets/sounds/coal_6.opus',
+      ],
+    ),
+    SoundType(
+      id: 'radio',
+      title: 'Vintage Radio',
+      description: 'Lo-fi static radio ambience',
+      category: SoundCategory.ambient,
+      icon: Icons.radio_outlined,
+      imagePath: 'assets/images/thunder.png',
+      variantCount: 6,
+      audioAssetPaths: [
+        'assets/sounds/radio_1.opus',
+        'assets/sounds/radio_2.opus',
+        'assets/sounds/radio_3.opus',
+        'assets/sounds/radio_4.opus',
+        'assets/sounds/radio_5.opus',
+        'assets/sounds/radio_6.opus',
+      ],
+    ),
+
+    // --- RELAXATION ---
+    SoundType(
+      id: 'heart',
+      title: 'Heartbeat',
+      description: 'Calming womb-like pulse',
+      category: SoundCategory.relaxation,
+      icon: Icons.favorite_border_rounded,
+      imagePath: 'assets/images/birds_chirping.png',
+      variantCount: 6,
+      audioAssetPaths: [
+        'assets/sounds/heart_1.opus',
+        'assets/sounds/heart_2.opus',
+        'assets/sounds/heart_3.opus',
+        'assets/sounds/heart_4.opus',
+        'assets/sounds/heart_5.opus',
+        'assets/sounds/heart_6.opus',
+      ],
+    ),
+    SoundType(
+      id: 'car',
+      title: 'Car Highway Ride',
+      description: 'Smooth cabin noise on asphalt',
+      category: SoundCategory.relaxation,
+      icon: Icons.directions_car_outlined,
+      imagePath: 'assets/images/soft_rain.png',
+      variantCount: 6,
+      audioAssetPaths: [
+        'assets/sounds/car_1.opus',
+        'assets/sounds/car_2.opus',
+        'assets/sounds/car_3.opus',
+        'assets/sounds/car_4.opus',
+        'assets/sounds/car_5.opus',
+        'assets/sounds/car_6.opus',
+      ],
+    ),
+    SoundType(
+      id: 'bus',
+      title: 'Night Bus',
+      description: 'Low engine hum & road vibration',
+      category: SoundCategory.relaxation,
+      icon: Icons.directions_bus_outlined,
+      imagePath: 'assets/images/soft_rain.png',
+      variantCount: 6,
+      audioAssetPaths: [
+        'assets/sounds/bus_1.opus',
+        'assets/sounds/bus_2.opus',
+        'assets/sounds/bus_3.opus',
+        'assets/sounds/bus_4.opus',
+        'assets/sounds/bus_5.opus',
+        'assets/sounds/bus_6.opus',
+      ],
+    ),
+    SoundType(
+      id: 'birthday',
+      title: 'Celebration Chimes',
+      description: 'Gentle music box melody',
+      category: SoundCategory.relaxation,
+      icon: Icons.cake_outlined,
+      imagePath: 'assets/images/fireplace.png',
+      variantCount: 6,
+      audioAssetPaths: [
+        'assets/sounds/birthday_1.opus',
+        'assets/sounds/birthday_2.opus',
+        'assets/sounds/birthday_3.opus',
+        'assets/sounds/birthday_4.opus',
+        'assets/sounds/birthday_5.opus',
+        'assets/sounds/birthday_6.opus',
+      ],
+    ),
+    SoundType(
+      id: 'holiday',
+      title: 'Holiday Breeze',
+      description: 'Folk wind chimes & relaxed tones',
+      category: SoundCategory.relaxation,
+      icon: Icons.beach_access_outlined,
+      imagePath: 'assets/images/ocean_waves.png',
+      variantCount: 6,
+      audioAssetPaths: [
+        'assets/sounds/holiday_1.opus',
+        'assets/sounds/holiday_2.opus',
+        'assets/sounds/holiday_3.opus',
+        'assets/sounds/holiday_4.opus',
+        'assets/sounds/holiday_5.opus',
+        'assets/sounds/holiday_6.opus',
+      ],
+    ),
+    SoundType(
+      id: 'jogging',
+      title: 'Forest Footsteps',
+      description: 'Rhythmic soft footsteps in nature',
+      category: SoundCategory.relaxation,
+      icon: Icons.directions_walk_rounded,
+      imagePath: 'assets/images/forest_night.png',
+      variantCount: 6,
+      audioAssetPaths: [
+        'assets/sounds/jogging_1.opus',
+        'assets/sounds/jogging_2.opus',
+        'assets/sounds/jogging_3.opus',
+        'assets/sounds/jogging_4.opus',
+        'assets/sounds/jogging_5.opus',
+        'assets/sounds/jogging_6.opus',
+      ],
+    ),
+    SoundType(
+      id: 'karate',
+      title: 'Zen Meditation',
+      description: 'Deep resonant bell strikes',
+      category: SoundCategory.relaxation,
+      icon: Icons.self_improvement_rounded,
+      imagePath: 'assets/images/forest_night.png',
+      variantCount: 6,
+      audioAssetPaths: [
+        'assets/sounds/karate_1.opus',
+        'assets/sounds/karate_2.opus',
+        'assets/sounds/karate_3.opus',
+        'assets/sounds/karate_4.opus',
+        'assets/sounds/karate_5.opus',
+        'assets/sounds/karate_6.opus',
+      ],
+    ),
+    SoundType(
+      id: 'shoes',
+      title: 'Wooden Floor Steps',
+      description: 'Gentle slow footsteps on wood',
+      category: SoundCategory.relaxation,
+      icon: Icons.do_not_step_rounded,
+      imagePath: 'assets/images/fireplace.png',
+      variantCount: 6,
+      audioAssetPaths: [
+        'assets/sounds/shoes_1.opus',
+        'assets/sounds/shoes_2.opus',
+        'assets/sounds/shoes_3.opus',
+        'assets/sounds/shoes_4.opus',
+        'assets/sounds/shoes_5.opus',
+        'assets/sounds/shoes_6.opus',
+      ],
+    ),
+  ];
+
+  static SoundType? getByIdOrNull(String id) {
+    for (final s in allSounds) {
+      if (s.id == id) return s;
+    }
+    return null;
+  }
+
+  static SoundType getById(String id) {
+    return allSounds.firstWhere(
+      (s) => s.id == id,
+      orElse: () => allSounds.first,
+    );
+  }
+
+  static List<SoundType> getByCategory(SoundCategory category) {
+    if (category == SoundCategory.all) return allSounds;
+    return allSounds.where((s) => s.category == category).toList();
+  }
+}

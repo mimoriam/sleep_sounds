@@ -1,87 +1,137 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../../models/sound_model.dart';
+import '../../../providers/audio_provider.dart';
 import '../../../utils/app_colors.dart';
 import '../../../utils/app_themes.dart';
-import '../favourite/favourite.dart';
+import '../../../utils/page_transitions.dart';
+import '../../../utils/tab_notification.dart';
 import 'widgets/sound_playing.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
+  String _getTimeGreeting() {
+    final hour = DateTime.now().hour;
+    if (hour >= 5 && hour < 12) {
+      return 'Good Morning ☀️';
+    } else if (hour >= 12 && hour < 17) {
+      return 'Good Afternoon 🌤️';
+    } else if (hour >= 17 && hour < 21) {
+      return 'Good Evening 🌅';
+    } else {
+      return 'Good Night 🌙';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(AppThemes.paddingScreen),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Header Row
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Sleep peacefully tonight',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                        ),
-                        SizedBox(height: 4),
-                        Text(
-                          'Good Night 🌙',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: AppColors.textSecondary,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  // Notification Bell Container
-                  Container(
-                    width: 48,
-                    height: 48,
-                    decoration: BoxDecoration(
-                      color: AppColors.cardColor,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color: AppColors.borderLight,
-                        width: 1,
-                      ),
-                    ),
-                    child: const Icon(
-                      Icons.notifications_none_outlined,
-                      color: Colors.white,
-                      size: 24,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 28),
+    final allSounds = SoundRegistry.allSounds;
 
-              // Featured Card ("Tonight's Best Sleep Sound")
-              GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const SoundPlaying(
-                        title: 'Forest Night',
-                        subtitle: 'Peaceful woodland ambience',
-                        imagePath: 'assets/images/forest_night.png',
-                        fallbackIcon: Icons.nights_stay_outlined,
+    // Daily Featured Sound
+    final dailyIndex = DateTime.now().day % allSounds.length;
+    final featuredSound = allSounds[dailyIndex];
+
+    return Selector<AudioProvider, ({Map<String, int> counts, List<String> recent})>(
+      selector: (_, a) => (counts: a.playCounts, recent: a.recentSoundIds),
+      builder: (context, history, _) {
+        List<SoundType> popularSounds;
+        if (history.counts.isNotEmpty) {
+          final sorted = List<SoundType>.from(allSounds)
+            ..sort((a, b) => (history.counts[b.id] ?? 0).compareTo(history.counts[a.id] ?? 0));
+          popularSounds = sorted.take(4).toList();
+        } else {
+          popularSounds = [
+            SoundRegistry.getById('wave'),
+            SoundRegistry.getById('fire-sounds'),
+            SoundRegistry.getById('rain'),
+            SoundRegistry.getById('sleeping_tone'),
+          ];
+        }
+
+        List<SoundType> recentlyPlayed;
+        if (history.recent.isNotEmpty) {
+          recentlyPlayed = history.recent
+              .map((id) => SoundRegistry.getByIdOrNull(id))
+              .whereType<SoundType>()
+              .take(4)
+              .toList();
+        } else {
+          recentlyPlayed = [
+            SoundRegistry.getById('fan'),
+            SoundRegistry.getById('clock'),
+            SoundRegistry.getById('cat'),
+            SoundRegistry.getById('midnight'),
+          ];
+        }
+
+        return Scaffold(
+          backgroundColor: AppColors.background(context),
+          body: SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(AppThemes.paddingScreen),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Header Row
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Sleep peacefully tonight',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.text(context),
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              _getTimeGreeting(),
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: AppColors.textMuted(context),
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                  );
-                },
+                      const SizedBox(width: 16),
+                      Container(
+                        width: 48,
+                        height: 48,
+                        decoration: BoxDecoration(
+                          color: AppColors.card(context),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: AppColors.border(context),
+                            width: 1,
+                          ),
+                        ),
+                        child: Icon(
+                          Icons.notifications_none_outlined,
+                          color: AppColors.text(context),
+                          size: 24,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 28),
+
+                  // Featured Card ("Tonight's Best Sleep Sound")
+                  GestureDetector(
+                    onTap: () {
+                      context.read<AudioProvider>().selectAndPlay(featuredSound);
+                      Navigator.push(
+                        context,
+                        SlideUpFadeRoute(page: SoundPlaying(sound: featuredSound)),
+                      );
+                    },
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(20),
                   child: SizedBox(
@@ -90,25 +140,15 @@ class HomeScreen extends StatelessWidget {
                     child: Stack(
                       fit: StackFit.expand,
                       children: [
-                        // Image with fallback
                         Image.asset(
-                          'assets/images/forest_night.png',
+                          featuredSound.imagePath ?? 'assets/images/ocean_waves.png',
                           fit: BoxFit.cover,
                           errorBuilder: (context, error, stackTrace) {
                             return Container(
-                              decoration: const BoxDecoration(
-                                gradient: LinearGradient(
-                                  colors: [
-                                    Color(0xFF151C2C),
-                                    Color(0xFF0B101E),
-                                  ],
-                                  begin: Alignment.topLeft,
-                                  end: Alignment.bottomRight,
-                                ),
-                              ),
-                              child: const Center(
+                              color: AppColors.card(context),
+                              child: Center(
                                 child: Icon(
-                                  Icons.nights_stay_outlined,
+                                  featuredSound.icon,
                                   color: AppColors.primaryCyan,
                                   size: 48,
                                 ),
@@ -116,7 +156,6 @@ class HomeScreen extends StatelessWidget {
                             );
                           },
                         ),
-                        // Gradient Overlay for Readability
                         Container(
                           decoration: BoxDecoration(
                             gradient: LinearGradient(
@@ -130,7 +169,6 @@ class HomeScreen extends StatelessWidget {
                             ),
                           ),
                         ),
-                        // Content
                         Padding(
                           padding: const EdgeInsets.all(16.0),
                           child: Row(
@@ -149,9 +187,9 @@ class HomeScreen extends StatelessWidget {
                                       ),
                                     ),
                                     const SizedBox(height: 6),
-                                    const Text(
-                                      "Forest Night",
-                                      style: TextStyle(
+                                    Text(
+                                      featuredSound.title,
+                                      style: const TextStyle(
                                         color: Colors.white,
                                         fontSize: 22,
                                         fontWeight: FontWeight.bold,
@@ -159,7 +197,7 @@ class HomeScreen extends StatelessWidget {
                                     ),
                                     const SizedBox(height: 4),
                                     Text(
-                                      "Peaceful woodland ambience",
+                                      featuredSound.description,
                                       style: TextStyle(
                                         color: Colors.white.withValues(
                                           alpha: 0.7,
@@ -170,7 +208,6 @@ class HomeScreen extends StatelessWidget {
                                   ],
                                 ),
                               ),
-                              // Play Button
                               Container(
                                 width: 48,
                                 height: 48,
@@ -198,12 +235,12 @@ class HomeScreen extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
+                  Text(
                     'Popular Sounds',
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                      color: AppColors.text(context),
                     ),
                   ),
                   TextButton(
@@ -231,120 +268,78 @@ class HomeScreen extends StatelessWidget {
               // Popular Sounds Horizontal List
               SizedBox(
                 height: 200,
-                child: ListView(
+                child: ListView.builder(
                   scrollDirection: Axis.horizontal,
                   physics: const BouncingScrollPhysics(),
-                  children: const [
-                    SoundCard(
-                      title: 'Forest Night',
-                      subtitle: 'Peaceful woodland ambi...',
-                      imagePath: 'assets/images/forest_night.png',
+                  itemCount: popularSounds.length,
+                  itemBuilder: (context, index) {
+                    final sound = popularSounds[index];
+                    return SoundCardWidget(
+                      sound: sound,
                       width: 170,
                       height: 200,
-                      fallbackIcon: Icons.terrain,
-                    ),
-                    SoundCard(
-                      title: 'Fireplace crackle',
-                      subtitle: 'Cozy fire sounds',
-                      imagePath: 'assets/images/fireplace.png',
-                      width: 170,
-                      height: 200,
-                      fallbackIcon: Icons.local_fire_department_outlined,
-                    ),
-                    SoundCard(
-                      title: 'Ocean Waves',
-                      subtitle: 'Soothing beach waves',
-                      imagePath: 'assets/images/ocean_waves.png',
-                      width: 170,
-                      height: 200,
-                      fallbackIcon: Icons.waves_outlined,
-                    ),
-                  ],
+                    );
+                  },
                 ),
               ),
               const SizedBox(height: 32),
 
-              // Recently Added Section Header
-              const Text(
-                'Recently Added',
+              // Recently Played Section Header
+              Text(
+                'Recently Played',
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                  color: AppColors.text(context),
                 ),
               ),
               const SizedBox(height: 16),
 
-              // Recently Added Horizontal List
+              // Recently Played Horizontal List
               SizedBox(
                 height: 150,
-                child: ListView(
+                child: ListView.builder(
                   scrollDirection: Axis.horizontal,
                   physics: const BouncingScrollPhysics(),
-                  children: const [
-                    SoundCard(
-                      title: 'Soft Rain',
-                      subtitle: 'Gentle rainfall',
-                      imagePath: 'assets/images/soft_rain.png',
+                  itemCount: recentlyPlayed.length,
+                  itemBuilder: (context, index) {
+                    final sound = recentlyPlayed[index];
+                    return SoundCardWidget(
+                      sound: sound,
                       width: 130,
                       height: 150,
                       titleSize: 14,
                       subtitleSize: 11,
-                      fallbackIcon: Icons.umbrella_outlined,
-                    ),
-                    SoundCard(
-                      title: 'Birds Chirping',
-                      subtitle: 'Morning bird songs',
-                      imagePath: 'assets/images/birds_chirping.png',
-                      width: 130,
-                      height: 150,
-                      titleSize: 14,
-                      subtitleSize: 11,
-                      fallbackIcon: Icons.flutter_dash_outlined,
-                    ),
-                    SoundCard(
-                      title: 'Thunders',
-                      subtitle: 'Deep thunder rumbles',
-                      imagePath: 'assets/images/thunder.png',
-                      width: 130,
-                      height: 150,
-                      titleSize: 14,
-                      subtitleSize: 11,
-                      fallbackIcon: Icons.flash_on_outlined,
-                    ),
-                  ],
+                    );
+                  },
                 ),
               ),
               const SizedBox(height: 12),
-            ],
+                ],
+              ),
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }
 
-// --- SHARED COMPONENT: SoundCard ---
-class SoundCard extends StatelessWidget {
-  final String title;
-  final String subtitle;
-  final String imagePath;
+// SoundCardWidget using SoundType
+class SoundCardWidget extends StatelessWidget {
+  final SoundType sound;
   final double width;
   final double height;
   final double titleSize;
   final double subtitleSize;
-  final IconData fallbackIcon;
 
-  const SoundCard({
+  const SoundCardWidget({
     super.key,
-    required this.title,
-    required this.subtitle,
-    required this.imagePath,
+    required this.sound,
     required this.width,
     required this.height,
     this.titleSize = 16.0,
     this.subtitleSize = 12.0,
-    this.fallbackIcon = Icons.music_note,
   });
 
   @override
@@ -358,22 +353,17 @@ class SoundCard extends StatelessWidget {
         child: Stack(
           fit: StackFit.expand,
           children: [
-            // Background Image
             Image.asset(
-              imagePath,
+              sound.imagePath ?? 'assets/images/forest_night.png',
               fit: BoxFit.cover,
               errorBuilder: (context, error, stackTrace) {
                 return Container(
-                  decoration: const BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [Color(0xFF151C2C), Color(0xFF0B101E)],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
+                  decoration: BoxDecoration(
+                    color: AppColors.card(context),
                   ),
                   child: Center(
                     child: Icon(
-                      fallbackIcon,
+                      sound.icon,
                       color: AppColors.primaryCyan,
                       size: width * 0.28,
                     ),
@@ -381,7 +371,6 @@ class SoundCard extends StatelessWidget {
                 );
               },
             ),
-            // Gradient Overlay
             Container(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
@@ -394,7 +383,6 @@ class SoundCard extends StatelessWidget {
                 ),
               ),
             ),
-            // Text Content
             Padding(
               padding: const EdgeInsets.all(12.0),
               child: Column(
@@ -402,7 +390,7 @@ class SoundCard extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   Text(
-                    title,
+                    sound.title,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
@@ -413,7 +401,7 @@ class SoundCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    subtitle,
+                    sound.description,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
@@ -424,22 +412,15 @@ class SoundCard extends StatelessWidget {
                 ],
               ),
             ),
-            // Material Splash Inkwell
             Positioned.fill(
               child: Material(
                 color: Colors.transparent,
                 child: InkWell(
                   onTap: () {
+                    context.read<AudioProvider>().selectAndPlay(sound);
                     Navigator.push(
                       context,
-                      MaterialPageRoute(
-                        builder: (context) => SoundPlaying(
-                          title: title,
-                          subtitle: subtitle,
-                          imagePath: imagePath,
-                          fallbackIcon: fallbackIcon,
-                        ),
-                      ),
+                      SlideUpFadeRoute(page: SoundPlaying(sound: sound)),
                     );
                   },
                 ),
