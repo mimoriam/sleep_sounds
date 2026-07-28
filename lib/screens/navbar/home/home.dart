@@ -74,49 +74,24 @@ class HomeScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Header Row
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Sleep peacefully tonight',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: AppColors.text(context),
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              _getTimeGreeting(),
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: AppColors.textMuted(context),
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ],
+                      Text(
+                        'Sleep peacefully tonight',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.text(context),
                         ),
                       ),
-                      const SizedBox(width: 16),
-                      Container(
-                        width: 48,
-                        height: 48,
-                        decoration: BoxDecoration(
-                          color: AppColors.card(context),
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(
-                            color: AppColors.border(context),
-                            width: 1,
-                          ),
-                        ),
-                        child: Icon(
-                          Icons.notifications_none_outlined,
-                          color: AppColors.text(context),
-                          size: 24,
+                      const SizedBox(height: 4),
+                      Text(
+                        _getTimeGreeting(),
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: AppColors.textMuted(context),
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
                     ],

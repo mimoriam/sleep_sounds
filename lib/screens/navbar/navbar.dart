@@ -28,17 +28,81 @@ class _NavbarState extends State<Navbar> {
     const SettingsScreen(),
   ];
 
+  Future<bool> _showExitConfirmationDialog(BuildContext context) async {
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.card(context),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: BorderSide(color: AppColors.border(context), width: 1),
+        ),
+        title: Text(
+          'Exit App?',
+          style: TextStyle(
+            color: AppColors.text(context),
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        content: Text(
+          'Are you sure you want to exit Sleep Sounds?',
+          style: TextStyle(color: AppColors.textMuted(context)),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(
+              'Cancel',
+              style: TextStyle(color: AppColors.textMuted(context)),
+            ),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primaryCyan,
+              foregroundColor: Colors.black,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text(
+              'Exit',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+          ),
+        ],
+      ),
+    );
+    return result ?? false;
+  }
+
   @override
   Widget build(BuildContext context) {
-    return NotificationListener<TabSwitchNotification>(
-      onNotification: (notification) {
-        setState(() {
-          _currentIndex = notification.index;
-        });
-        return true;
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) async {
+        if (didPop) return;
+        if (_currentIndex != 0) {
+          setState(() {
+            _currentIndex = 0;
+          });
+        } else {
+          final shouldExit = await _showExitConfirmationDialog(context);
+          if (shouldExit && context.mounted) {
+            context.read<AudioProvider>().stop();
+            SystemNavigator.pop();
+          }
+        }
       },
-      child: Scaffold(
-        body: IndexedStack(index: _currentIndex, children: _screens),
+      child: NotificationListener<TabSwitchNotification>(
+        onNotification: (notification) {
+          setState(() {
+            _currentIndex = notification.index;
+          });
+          return true;
+        },
+        child: Scaffold(
+          body: IndexedStack(index: _currentIndex, children: _screens),
         bottomNavigationBar: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -158,8 +222,9 @@ class _NavbarState extends State<Navbar> {
           ],
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 }
 
 class _MiniPlayerBar extends StatelessWidget {

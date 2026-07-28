@@ -100,8 +100,9 @@ class SettingsScreen extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 12),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
                         children: [null, 15, 30, 45, 60].map((mins) {
                           final isSelected = settings.defaultTimerMinutes == mins;
                           final label = mins == null ? 'Off' : '${mins}m';
