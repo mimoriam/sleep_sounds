@@ -10,6 +10,7 @@ class SoundType {
   final String? imagePath;
   final int variantCount;
   final List<String> audioAssetPaths;
+  final List<String> tags;
 
   const SoundType({
     required this.id,
@@ -20,6 +21,7 @@ class SoundType {
     this.imagePath,
     required this.variantCount,
     required this.audioAssetPaths,
+    this.tags = const [],
   });
 }
 
@@ -29,11 +31,12 @@ class SoundRegistry {
     SoundType(
       id: 'wave',
       title: 'Ocean Waves',
-      description: 'Calming shore tides & rhythmic waves',
+      description: 'Calming shore tides & rhythmic ocean waves',
       category: SoundCategory.nature,
       icon: Icons.waves_rounded,
       imagePath: 'assets/images/ocean_waves.png',
       variantCount: 6,
+      tags: ['sea', 'water', 'tide', 'ocean', 'relax', 'deep sleep'],
       audioAssetPaths: [
         'assets/sounds/wave_1.opus',
         'assets/sounds/wave_2.opus',
@@ -46,11 +49,12 @@ class SoundRegistry {
     SoundType(
       id: 'frog',
       title: 'Night Frogs',
-      description: 'Peaceful pond croaks under the stars',
+      description: 'Peaceful pond croaks under the starry sky',
       category: SoundCategory.nature,
       icon: Icons.eco_outlined,
       imagePath: 'assets/images/forest_night.png',
       variantCount: 6,
+      tags: ['pond', 'crickets', 'night', 'wildlife', 'nature'],
       audioAssetPaths: [
         'assets/sounds/frog_1.opus',
         'assets/sounds/frog_2.opus',
@@ -63,11 +67,12 @@ class SoundRegistry {
     SoundType(
       id: 'cat',
       title: 'Cat Purring',
-      description: 'Gentle rhythmic purrs for cozy sleep',
+      description: 'Gentle, cozy rhythmic purrs for instant calm',
       category: SoundCategory.nature,
       icon: Icons.pets_rounded,
-      imagePath: 'assets/images/birds_chirping.png',
+      imagePath: 'assets/images/forest_night.png',
       variantCount: 6,
+      tags: ['pet', 'kitty', 'cozy', 'warm', 'purr', 'snuggle'],
       audioAssetPaths: [
         'assets/sounds/cat_1.opus',
         'assets/sounds/cat_2.opus',
@@ -80,11 +85,12 @@ class SoundRegistry {
     SoundType(
       id: 'horse',
       title: 'Countryside Trails',
-      description: 'Rhythmic hoofbeats on soft trail',
+      description: 'Rhythmic hoofbeats on soft forest trail',
       category: SoundCategory.nature,
       icon: Icons.landscape_rounded,
       imagePath: 'assets/images/forest_night.png',
       variantCount: 6,
+      tags: ['country', 'path', 'trail', 'hoof', 'travel'],
       audioAssetPaths: [
         'assets/sounds/horse_1.opus',
         'assets/sounds/horse_2.opus',
@@ -99,11 +105,12 @@ class SoundRegistry {
     SoundType(
       id: 'rain',
       title: 'Soft Rain',
-      description: 'Gentle rainfall on leaves & roof',
+      description: 'Gentle rainfall tapping on leaves & rooftop',
       category: SoundCategory.rain,
       icon: Icons.umbrella_outlined,
       imagePath: 'assets/images/soft_rain.png',
       variantCount: 6,
+      tags: ['shower', 'storm', 'drizzle', 'water', 'rooftop', 'cozy'],
       audioAssetPaths: [
         'assets/sounds/rain_1.opus',
         'assets/sounds/rain_2.opus',
@@ -116,11 +123,12 @@ class SoundRegistry {
     SoundType(
       id: 'washing',
       title: 'Washing Machine',
-      description: 'Soothing low white rumble',
+      description: 'Soothing low rhythmic white rumble',
       category: SoundCategory.rain,
       icon: Icons.water_drop_outlined,
       imagePath: 'assets/images/soft_rain.png',
       variantCount: 6,
+      tags: ['laundry', 'rumble', 'hum', 'appliance', 'white noise'],
       audioAssetPaths: [
         'assets/sounds/washing_1.opus',
         'assets/sounds/washing_2.opus',
@@ -133,11 +141,12 @@ class SoundRegistry {
     SoundType(
       id: 'flush',
       title: 'Water Stream',
-      description: 'Continuous smooth water flow',
+      description: 'Continuous smooth flowing stream water',
       category: SoundCategory.rain,
       icon: Icons.water_rounded,
       imagePath: 'assets/images/ocean_waves.png',
       variantCount: 6,
+      tags: ['river', 'brook', 'flow', 'creek', 'waterfall'],
       audioAssetPaths: [
         'assets/sounds/flush_1.opus',
         'assets/sounds/flush_2.opus',
@@ -152,11 +161,12 @@ class SoundRegistry {
     SoundType(
       id: 'fan',
       title: 'Room Fan',
-      description: 'Consistent cooling breeze sound',
+      description: 'Consistent cooling breeze sound for deep sleep',
       category: SoundCategory.whiteNoise,
       icon: Icons.mode_fan_off_outlined,
       imagePath: 'assets/images/thunder.png',
       variantCount: 6,
+      tags: ['fan', 'breeze', 'wind', 'steady', 'focus', 'masking'],
       audioAssetPaths: [
         'assets/sounds/fan_1.opus',
         'assets/sounds/fan_2.opus',
@@ -168,12 +178,13 @@ class SoundRegistry {
     ),
     SoundType(
       id: 'machine-fan',
-      title: 'Box Fan',
-      description: 'Heavy steady fan hum',
+      title: 'Box Fan Hum',
+      description: 'Heavy steady fan hum to block distractions',
       category: SoundCategory.whiteNoise,
       icon: Icons.toys_outlined,
       imagePath: 'assets/images/thunder.png',
       variantCount: 6,
+      tags: ['heavy fan', 'box fan', 'air', 'hum', 'cooler'],
       audioAssetPaths: [
         'assets/sounds/machine-fan_1.opus',
         'assets/sounds/machine-fan_2.opus',
@@ -186,11 +197,12 @@ class SoundRegistry {
     SoundType(
       id: 'noise',
       title: 'Deep Static',
-      description: 'Pure static frequency for masking noise',
+      description: 'Pure static frequency for complete noise masking',
       category: SoundCategory.whiteNoise,
       icon: Icons.blur_on_rounded,
       imagePath: 'assets/images/thunder.png',
       variantCount: 6,
+      tags: ['static', 'pink noise', 'brown noise', 'blocker', 'focus'],
       audioAssetPaths: [
         'assets/sounds/noise_1.opus',
         'assets/sounds/noise_2.opus',
@@ -205,11 +217,12 @@ class SoundRegistry {
     SoundType(
       id: 'sleeping_tone',
       title: 'Deep Sleep Tone',
-      description: 'Ambient synth pads tuned for rest',
+      description: 'Ambient synth pads tuned for rest & delta waves',
       category: SoundCategory.sleepMusic,
       icon: Icons.nightlight_round,
       imagePath: 'assets/images/forest_night.png',
       variantCount: 6,
+      tags: ['synth', 'meditation', 'pad', 'ambient', 'dream', 'delta'],
       audioAssetPaths: [
         'assets/sounds/sleeping_tone_1.opus',
         'assets/sounds/sleeping_tone_2.opus',
@@ -222,11 +235,12 @@ class SoundRegistry {
     SoundType(
       id: 'relaxing_tone',
       title: 'Relaxation Melodies',
-      description: 'Soft harmonic chimes & drones',
+      description: 'Soft harmonic chimes & soothing drones',
       category: SoundCategory.sleepMusic,
       icon: Icons.music_note_rounded,
       imagePath: 'assets/images/fireplace.png',
       variantCount: 6,
+      tags: ['chimes', 'piano', 'gentle', 'calm', 'restful'],
       audioAssetPaths: [
         'assets/sounds/relaxing_tone_1.opus',
         'assets/sounds/relaxing_tone_2.opus',
@@ -239,11 +253,12 @@ class SoundRegistry {
     SoundType(
       id: 'midnight',
       title: 'Midnight Serenity',
-      description: 'Lullaby vibes for quiet night hours',
+      description: 'Lullaby vibes for quiet late night hours',
       category: SoundCategory.sleepMusic,
       icon: Icons.dark_mode_outlined,
       imagePath: 'assets/images/forest_night.png',
       variantCount: 6,
+      tags: ['lullaby', 'midnight', 'night', 'calm', 'peaceful'],
       audioAssetPaths: [
         'assets/sounds/midnight_1.opus',
         'assets/sounds/midnight_2.opus',
@@ -261,6 +276,7 @@ class SoundRegistry {
       icon: Icons.wb_sunny_outlined,
       imagePath: 'assets/images/birds_chirping.png',
       variantCount: 6,
+      tags: ['warm', 'acoustic', 'morning', 'peaceful', 'dreamy'],
       audioAssetPaths: [
         'assets/sounds/happy_day_1.opus',
         'assets/sounds/happy_day_2.opus',
@@ -273,11 +289,12 @@ class SoundRegistry {
     SoundType(
       id: 'olo',
       title: 'Peaceful Chords',
-      description: 'Minimalist ambient drone layers',
+      description: 'Minimalist ambient drone layers & swells',
       category: SoundCategory.sleepMusic,
       icon: Icons.graphic_eq_outlined,
       imagePath: 'assets/images/fireplace.png',
       variantCount: 6,
+      tags: ['drone', 'minimalist', 'ambient', 'chords', 'zen'],
       audioAssetPaths: [
         'assets/sounds/olo_1.opus',
         'assets/sounds/olo_2.opus',
@@ -292,11 +309,12 @@ class SoundRegistry {
     SoundType(
       id: 'fire-sounds',
       title: 'Fireplace Crackle',
-      description: 'Cozy hearth fire with gentle crackles',
+      description: 'Cozy hearth fire with gentle wooden crackles',
       category: SoundCategory.ambient,
       icon: Icons.local_fire_department_outlined,
       imagePath: 'assets/images/fireplace.png',
       variantCount: 9,
+      tags: ['fire', 'hearth', 'crackle', 'warmth', 'cabin', 'winter'],
       audioAssetPaths: [
         'assets/sounds/fire-sounds_1.opus',
         'assets/sounds/fire-sounds_2.opus',
@@ -312,11 +330,12 @@ class SoundRegistry {
     SoundType(
       id: 'clock',
       title: 'Clock Ticking',
-      description: 'Rhythmic pendulum clock tick-tock',
+      description: 'Rhythmic pendulum clock tick-tock pacing',
       category: SoundCategory.ambient,
       icon: Icons.access_time_rounded,
       imagePath: 'assets/images/thunder.png',
       variantCount: 6,
+      tags: ['tick', 'tock', 'pendulum', 'time', 'rhythm', 'focus'],
       audioAssetPaths: [
         'assets/sounds/clock_1.opus',
         'assets/sounds/clock_2.opus',
@@ -329,11 +348,12 @@ class SoundRegistry {
     SoundType(
       id: 'coal',
       title: 'Embers & Coal',
-      description: 'Subtle glowing ember fizzle',
+      description: 'Subtle glowing ember fizzle and warmth',
       category: SoundCategory.ambient,
       icon: Icons.fireplace_rounded,
       imagePath: 'assets/images/fireplace.png',
       variantCount: 6,
+      tags: ['embers', 'charcoal', 'fizzle', 'hearth', 'camp'],
       audioAssetPaths: [
         'assets/sounds/coal_1.opus',
         'assets/sounds/coal_2.opus',
@@ -346,11 +366,12 @@ class SoundRegistry {
     SoundType(
       id: 'radio',
       title: 'Vintage Radio',
-      description: 'Lo-fi static radio ambience',
+      description: 'Lo-fi static radio ambience from afar',
       category: SoundCategory.ambient,
       icon: Icons.radio_outlined,
       imagePath: 'assets/images/thunder.png',
       variantCount: 6,
+      tags: ['radio', 'lo-fi', 'vintage', 'static', 'nostalgia'],
       audioAssetPaths: [
         'assets/sounds/radio_1.opus',
         'assets/sounds/radio_2.opus',
@@ -365,11 +386,12 @@ class SoundRegistry {
     SoundType(
       id: 'heart',
       title: 'Heartbeat',
-      description: 'Calming womb-like pulse',
+      description: 'Calming womb-like pulse & steady rhythm',
       category: SoundCategory.relaxation,
       icon: Icons.favorite_border_rounded,
       imagePath: 'assets/images/birds_chirping.png',
       variantCount: 6,
+      tags: ['pulse', 'womb', 'baby', 'rhythm', 'calm', 'soothing'],
       audioAssetPaths: [
         'assets/sounds/heart_1.opus',
         'assets/sounds/heart_2.opus',
@@ -382,11 +404,12 @@ class SoundRegistry {
     SoundType(
       id: 'car',
       title: 'Car Highway Ride',
-      description: 'Smooth cabin noise on asphalt',
+      description: 'Smooth interior cabin ride on quiet highway',
       category: SoundCategory.relaxation,
       icon: Icons.directions_car_outlined,
       imagePath: 'assets/images/soft_rain.png',
       variantCount: 6,
+      tags: ['car', 'driving', 'highway', 'road trip', 'asphalt'],
       audioAssetPaths: [
         'assets/sounds/car_1.opus',
         'assets/sounds/car_2.opus',
@@ -399,11 +422,12 @@ class SoundRegistry {
     SoundType(
       id: 'bus',
       title: 'Night Bus',
-      description: 'Low engine hum & road vibration',
+      description: 'Low engine hum & gentle road vibration',
       category: SoundCategory.relaxation,
       icon: Icons.directions_bus_outlined,
       imagePath: 'assets/images/soft_rain.png',
       variantCount: 6,
+      tags: ['bus', 'travel', 'engine', 'transit', 'night ride'],
       audioAssetPaths: [
         'assets/sounds/bus_1.opus',
         'assets/sounds/bus_2.opus',
@@ -416,11 +440,12 @@ class SoundRegistry {
     SoundType(
       id: 'birthday',
       title: 'Celebration Chimes',
-      description: 'Gentle music box melody',
+      description: 'Gentle music box melody for sweet dreams',
       category: SoundCategory.relaxation,
       icon: Icons.cake_outlined,
       imagePath: 'assets/images/fireplace.png',
       variantCount: 6,
+      tags: ['music box', 'lullaby', 'chimes', 'gentle', 'nursery'],
       audioAssetPaths: [
         'assets/sounds/birthday_1.opus',
         'assets/sounds/birthday_2.opus',
@@ -433,11 +458,12 @@ class SoundRegistry {
     SoundType(
       id: 'holiday',
       title: 'Holiday Breeze',
-      description: 'Folk wind chimes & relaxed tones',
+      description: 'Soft wind chimes & relaxed tropical breeze',
       category: SoundCategory.relaxation,
       icon: Icons.beach_access_outlined,
       imagePath: 'assets/images/ocean_waves.png',
       variantCount: 6,
+      tags: ['breeze', 'chimes', 'resort', 'vacation', 'wind'],
       audioAssetPaths: [
         'assets/sounds/holiday_1.opus',
         'assets/sounds/holiday_2.opus',
@@ -450,11 +476,12 @@ class SoundRegistry {
     SoundType(
       id: 'jogging',
       title: 'Forest Footsteps',
-      description: 'Rhythmic soft footsteps in nature',
+      description: 'Rhythmic soft footsteps in tranquil nature',
       category: SoundCategory.relaxation,
       icon: Icons.directions_walk_rounded,
       imagePath: 'assets/images/forest_night.png',
       variantCount: 6,
+      tags: ['walk', 'forest', 'footsteps', 'path', 'outdoor'],
       audioAssetPaths: [
         'assets/sounds/jogging_1.opus',
         'assets/sounds/jogging_2.opus',
@@ -466,12 +493,13 @@ class SoundRegistry {
     ),
     SoundType(
       id: 'karate',
-      title: 'Zen Meditation',
-      description: 'Deep resonant bell strikes',
+      title: 'Zen Meditation Bell',
+      description: 'Deep resonant temple bell strikes & silence',
       category: SoundCategory.relaxation,
       icon: Icons.self_improvement_rounded,
       imagePath: 'assets/images/forest_night.png',
       variantCount: 6,
+      tags: ['zen', 'bell', 'meditation', 'singing bowl', 'gong'],
       audioAssetPaths: [
         'assets/sounds/karate_1.opus',
         'assets/sounds/karate_2.opus',
@@ -484,11 +512,12 @@ class SoundRegistry {
     SoundType(
       id: 'shoes',
       title: 'Wooden Floor Steps',
-      description: 'Gentle slow footsteps on wood',
+      description: 'Gentle slow footsteps on warm wooden floor',
       category: SoundCategory.relaxation,
       icon: Icons.do_not_step_rounded,
       imagePath: 'assets/images/fireplace.png',
       variantCount: 6,
+      tags: ['wood', 'steps', 'house', 'cozy', 'footsteps'],
       audioAssetPaths: [
         'assets/sounds/shoes_1.opus',
         'assets/sounds/shoes_2.opus',

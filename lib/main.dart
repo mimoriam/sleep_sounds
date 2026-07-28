@@ -4,6 +4,7 @@ import 'package:screen_brightness/screen_brightness.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'providers/audio_provider.dart';
 import 'providers/favorites_provider.dart';
+import 'providers/presets_provider.dart';
 import 'providers/settings_provider.dart';
 import 'screens/navbar/navbar.dart';
 import 'screens/onboarding/onboarding.dart';
@@ -32,6 +33,7 @@ void main() async {
       providers: [
         ChangeNotifierProvider(create: (_) => SettingsProvider(prefs)),
         ChangeNotifierProvider(create: (_) => FavoritesProvider(prefs)),
+        ChangeNotifierProvider(create: (_) => PresetsProvider(prefs)),
         ChangeNotifierProvider(
           create: (_) => AudioProvider(audioHandler: audioHandler),
         ),

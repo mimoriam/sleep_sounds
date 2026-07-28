@@ -41,7 +41,8 @@ class _SoundsScreenState extends State<SoundsScreen> {
             (s) =>
                 s.title.toLowerCase().contains(q) ||
                 s.description.toLowerCase().contains(q) ||
-                s.category.label.toLowerCase().contains(q),
+                s.category.label.toLowerCase().contains(q) ||
+                s.tags.any((t) => t.toLowerCase().contains(q)),
           )
           .toList();
     }

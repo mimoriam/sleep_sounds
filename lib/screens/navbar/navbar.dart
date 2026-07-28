@@ -8,6 +8,7 @@ import '../../utils/tab_notification.dart';
 import 'favourite/favourite.dart';
 import 'home/home.dart';
 import 'home/widgets/sound_playing.dart';
+import 'presets/presets_screen.dart';
 import 'settings/settings.dart';
 import 'sounds/sounds.dart';
 
@@ -24,6 +25,7 @@ class _NavbarState extends State<Navbar> {
   final List<Widget> _screens = [
     const HomeScreen(),
     const SoundsScreen(),
+    const PresetsScreen(),
     const FavouriteScreen(),
     const SettingsScreen(),
   ];
@@ -102,19 +104,51 @@ class _NavbarState extends State<Navbar> {
           return true;
         },
         child: Scaffold(
-          body: IndexedStack(index: _currentIndex, children: _screens),
-        bottomNavigationBar: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Selector<AudioProvider, bool>(
-              selector: (_, audio) =>
-                  audio.isPlaying || audio.timerRemainingSeconds != null,
-              builder: (context, showMiniPlayer, _) {
-                return showMiniPlayer
-                    ? const _MiniPlayerBar()
-                    : const SizedBox.shrink();
-              },
+          body: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 250),
+            switchInCurve: Curves.easeIn,
+            switchOutCurve: Curves.easeOut,
+            transitionBuilder: (child, animation) {
+              return FadeTransition(
+                opacity: animation,
+                child: child,
+              );
+            },
+            child: KeyedSubtree(
+              key: ValueKey(_currentIndex),
+              child: IndexedStack(index: _currentIndex, children: _screens),
             ),
+          ),
+          bottomNavigationBar: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Selector<AudioProvider, bool>(
+                selector: (_, audio) =>
+                    audio.isPlaying || audio.timerRemainingSeconds != null,
+                builder: (context, showMiniPlayer, _) {
+                  return AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 300),
+                    transitionBuilder: (child, animation) {
+                      return SlideTransition(
+                        position: Tween<Offset>(
+                          begin: const Offset(0, 1),
+                          end: Offset.zero,
+                        ).animate(CurvedAnimation(
+                          parent: animation,
+                          curve: Curves.easeOutCubic,
+                        )),
+                        child: FadeTransition(
+                          opacity: animation,
+                          child: child,
+                        ),
+                      );
+                    },
+                    child: showMiniPlayer
+                        ? const _MiniPlayerBar(key: ValueKey('mini_player'))
+                        : const SizedBox.shrink(key: ValueKey('no_mini_player')),
+                  );
+                },
+              ),
             Container(
               decoration: BoxDecoration(
                 color: AppColors.card(context),
@@ -161,11 +195,11 @@ class _NavbarState extends State<Navbar> {
                     unselectedItemColor: AppColors.textMuted(context),
                     selectedLabelStyle: const TextStyle(
                       fontWeight: FontWeight.w600,
-                      fontSize: 12,
+                      fontSize: 11,
                     ),
                     unselectedLabelStyle: const TextStyle(
                       fontWeight: FontWeight.w400,
-                      fontSize: 12,
+                      fontSize: 11,
                     ),
                     type: BottomNavigationBarType.fixed,
                     elevation: 0,
@@ -173,44 +207,55 @@ class _NavbarState extends State<Navbar> {
                       BottomNavigationBarItem(
                         icon: Padding(
                           padding: EdgeInsets.only(bottom: 4.0),
-                          child: Icon(Icons.home_outlined, size: 24),
+                          child: Icon(Icons.home_outlined, size: 22),
                         ),
                         activeIcon: Padding(
                           padding: EdgeInsets.only(bottom: 4.0),
-                          child: Icon(Icons.home, size: 24),
+                          child: Icon(Icons.home, size: 22),
                         ),
                         label: 'Home',
                       ),
                       BottomNavigationBarItem(
                         icon: Padding(
                           padding: EdgeInsets.only(bottom: 4.0),
-                          child: Icon(Icons.music_note_outlined, size: 24),
+                          child: Icon(Icons.music_note_outlined, size: 22),
                         ),
                         activeIcon: Padding(
                           padding: EdgeInsets.only(bottom: 4.0),
-                          child: Icon(Icons.music_note, size: 24),
+                          child: Icon(Icons.music_note, size: 22),
                         ),
                         label: 'Sounds',
                       ),
                       BottomNavigationBarItem(
                         icon: Padding(
                           padding: EdgeInsets.only(bottom: 4.0),
-                          child: Icon(Icons.favorite_border, size: 24),
+                          child: Icon(Icons.tune_outlined, size: 22),
                         ),
                         activeIcon: Padding(
                           padding: EdgeInsets.only(bottom: 4.0),
-                          child: Icon(Icons.favorite, size: 24),
+                          child: Icon(Icons.tune, size: 22),
+                        ),
+                        label: 'Mixes',
+                      ),
+                      BottomNavigationBarItem(
+                        icon: Padding(
+                          padding: EdgeInsets.only(bottom: 4.0),
+                          child: Icon(Icons.favorite_border, size: 22),
+                        ),
+                        activeIcon: Padding(
+                          padding: EdgeInsets.only(bottom: 4.0),
+                          child: Icon(Icons.favorite, size: 22),
                         ),
                         label: 'Favorites',
                       ),
                       BottomNavigationBarItem(
                         icon: Padding(
                           padding: EdgeInsets.only(bottom: 4.0),
-                          child: Icon(Icons.settings_outlined, size: 24),
+                          child: Icon(Icons.settings_outlined, size: 22),
                         ),
                         activeIcon: Padding(
                           padding: EdgeInsets.only(bottom: 4.0),
-                          child: Icon(Icons.settings, size: 24),
+                          child: Icon(Icons.settings, size: 22),
                         ),
                         label: 'Settings',
                       ),
@@ -228,7 +273,7 @@ class _NavbarState extends State<Navbar> {
 }
 
 class _MiniPlayerBar extends StatelessWidget {
-  const _MiniPlayerBar();
+  const _MiniPlayerBar({super.key});
 
   String _formatTimer(int seconds) {
     final m = seconds ~/ 60;
@@ -305,34 +350,36 @@ class _MiniPlayerBar extends StatelessWidget {
                           fontSize: 14,
                         ),
                       ),
-                      Row(
-                        children: [
-                          if (audio.timerRemainingSeconds != null) ...[
-                            const Icon(
-                              Icons.timer_outlined,
-                              size: 12,
-                              color: AppColors.primaryCyan,
-                            ),
-                            const SizedBox(width: 4),
-                            Text(
-                              _formatTimer(audio.timerRemainingSeconds!),
-                              style: const TextStyle(
-                                color: AppColors.primaryCyan,
-                                fontSize: 12,
-                                fontWeight: FontWeight.w600,
+                          Row(
+                            children: [
+                              if (audio.timerRemainingSeconds != null) ...[
+                                const Icon(
+                                  Icons.timer_outlined,
+                                  size: 12,
+                                  color: AppColors.primaryCyan,
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  _formatTimer(audio.timerRemainingSeconds!),
+                                  style: const TextStyle(
+                                    color: AppColors.primaryCyan,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                              ],
+                              _EqualizerBars(isPlaying: audio.isPlaying),
+                              const SizedBox(width: 6),
+                              Text(
+                                audio.isPlaying ? 'Playing' : 'Paused',
+                                style: TextStyle(
+                                  color: AppColors.textMuted(context),
+                                  fontSize: 12,
+                                ),
                               ),
-                            ),
-                            const SizedBox(width: 8),
-                          ],
-                          Text(
-                            audio.isPlaying ? 'Playing' : 'Paused',
-                            style: TextStyle(
-                              color: AppColors.textMuted(context),
-                              fontSize: 12,
-                            ),
+                            ],
                           ),
-                        ],
-                      ),
                     ],
                   ),
                 ),
@@ -368,3 +415,95 @@ class _MiniPlayerBar extends StatelessWidget {
     );
   }
 }
+
+class _EqualizerBars extends StatefulWidget {
+  final bool isPlaying;
+  const _EqualizerBars({required this.isPlaying});
+
+  @override
+  State<_EqualizerBars> createState() => _EqualizerBarsState();
+}
+
+class _EqualizerBarsState extends State<_EqualizerBars>
+    with TickerProviderStateMixin {
+  late List<AnimationController> _controllers;
+  late List<Animation<double>> _animations;
+
+  @override
+  void initState() {
+    super.initState();
+    _controllers = List.generate(
+      3,
+      (i) => AnimationController(
+        vsync: this,
+        duration: Duration(milliseconds: 350 + i * 120),
+      ),
+    );
+    _animations = _controllers
+        .map((c) => Tween<double>(begin: 3, end: 12).animate(
+              CurvedAnimation(parent: c, curve: Curves.easeInOut),
+            ))
+        .toList();
+
+    if (widget.isPlaying) {
+      _startAnim();
+    }
+  }
+
+  void _startAnim() {
+    for (var c in _controllers) {
+      c.repeat(reverse: true);
+    }
+  }
+
+  void _stopAnim() {
+    for (var c in _controllers) {
+      c.stop();
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant _EqualizerBars oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.isPlaying != oldWidget.isPlaying) {
+      if (widget.isPlaying) {
+        _startAnim();
+      } else {
+        _stopAnim();
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    for (var c in _controllers) {
+      c.dispose();
+    }
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: List.generate(3, (i) {
+        return AnimatedBuilder(
+          animation: _animations[i],
+          builder: (context, child) {
+            return Container(
+              width: 2.5,
+              height: widget.isPlaying ? _animations[i].value : 3,
+              margin: const EdgeInsets.symmetric(horizontal: 1.0),
+              decoration: BoxDecoration(
+                color: AppColors.primaryCyan,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            );
+          },
+        );
+      }),
+    );
+  }
+}
+

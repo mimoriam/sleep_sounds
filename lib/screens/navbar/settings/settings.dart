@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 import '../../../providers/settings_provider.dart';
 import '../../../services/permission_service.dart';
@@ -204,22 +205,30 @@ class SettingsScreen extends StatelessWidget {
                   },
                 ),
                 _buildDivider(context),
-                ListTile(
-                  leading: Icon(
-                    Icons.info_outline_rounded,
-                    color: AppColors.textMuted(context),
-                  ),
-                  title: Text(
-                    'App Version',
-                    style: TextStyle(color: AppColors.text(context)),
-                  ),
-                  trailing: Text(
-                    'v1.0.0',
-                    style: TextStyle(
-                      color: AppColors.textMuted(context),
-                      fontSize: 14,
-                    ),
-                  ),
+                FutureBuilder<PackageInfo>(
+                  future: PackageInfo.fromPlatform(),
+                  builder: (context, snapshot) {
+                    final versionStr = snapshot.hasData
+                        ? 'v${snapshot.data!.version} (${snapshot.data!.buildNumber})'
+                        : 'Loading...';
+                    return ListTile(
+                      leading: Icon(
+                        Icons.info_outline_rounded,
+                        color: AppColors.textMuted(context),
+                      ),
+                      title: Text(
+                        'App Version',
+                        style: TextStyle(color: AppColors.text(context)),
+                      ),
+                      trailing: Text(
+                        versionStr,
+                        style: TextStyle(
+                          color: AppColors.textMuted(context),
+                          fontSize: 14,
+                        ),
+                      ),
+                    );
+                  },
                 ),
               ]),
               const SizedBox(height: 32),

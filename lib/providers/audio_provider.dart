@@ -37,6 +37,7 @@ class AudioProvider extends ChangeNotifier {
   bool _isStopping = false;
   bool _isInFadeOut = false;
   bool _timerExplicitlyCleared = false;
+  int _loadGeneration = 0; // Incremented on every new load; stale loads abort when mismatch detected
 
   SoundType _currentSound = SoundRegistry.allSounds[0]; // Default Ocean Waves
   int _currentVariantIndex = 0;
@@ -46,6 +47,7 @@ class AudioProvider extends ChangeNotifier {
   double _preFadeVolume = 0.70;
   int? _timerMinutes;
   int? _timerRemainingSeconds;
+  int? _timerTotalSeconds;
   Timer? _countdownTimer;
   bool _notificationsEnabled = true;
 
@@ -65,6 +67,75 @@ class AudioProvider extends ChangeNotifier {
   Future<void> _initialize() async {
     await _initMainPlayer();
     await _loadHistory();
+    await _restoreTimerIfNeeded();
+  }
+
+  Future<void> _restoreTimerIfNeeded() async {
+    try {
+      final endTimeStr = _prefs?.getString(_keyTimerEndTime);
+      if (endTimeStr == null) return;
+      final endTime = DateTime.parse(endTimeStr);
+      final remaining = endTime.difference(DateTime.now());
+      if (remaining.inSeconds > 0) {
+        final remainingMinutes = (remaining.inSeconds / 60.0).ceil();
+        // Restore by setting timerTotalSeconds directly then starting countdown
+        _timerTotalSeconds = remaining.inSeconds;
+        _timerRemainingSeconds = remaining.inSeconds;
+        _timerMinutes = remainingMinutes;
+        _preFadeVolume = _masterVolume;
+        _isInFadeOut = false;
+        _safeNotify();
+        _countdownTimer = Timer.periodic(const Duration(seconds: 1), (timer) async {
+          if (_isDisposed) { timer.cancel(); return; }
+          if (_timerRemainingSeconds == null || _timerRemainingSeconds! <= 0) {
+            timer.cancel();
+            _timerMinutes = null;
+            _timerRemainingSeconds = null;
+            _timerTotalSeconds = null;
+            _isInFadeOut = false;
+            _prefs?.remove(_keyTimerEndTime);
+            await pause();
+            _masterVolume = _preFadeVolume;
+            if (_mainPlayer != null) {
+              try { await _mainPlayer!.setVolume(_masterVolume); } catch (_) {}
+            }
+            for (final layer in _soundLayers) {
+              layer.volume = layer.preFadeVolume;
+              if (layer.player != null) {
+                try { await layer.player!.setVolume(layer.preFadeVolume); } catch (_) {}
+              }
+            }
+            if (_notificationsEnabled) {
+              await NotificationService.showTimerEndedNotification();
+            }
+            _safeNotify();
+          } else {
+            _timerRemainingSeconds = _timerRemainingSeconds! - 1;
+            if (_timerRemainingSeconds! <= 30 && _preFadeVolume > 0) {
+              _isInFadeOut = true;
+              final fadeFactor = _timerRemainingSeconds! / 30.0;
+              final targetVolume = (_preFadeVolume * fadeFactor).clamp(0.0, 1.0);
+              _masterVolume = targetVolume;
+              if (_mainPlayer != null) {
+                try { await _mainPlayer!.setVolume(targetVolume); } catch (_) {}
+              }
+              for (final layer in _soundLayers) {
+                if (layer.player != null) {
+                  final layerTarget = (layer.preFadeVolume * fadeFactor).clamp(0.0, 1.0);
+                  layer.volume = layerTarget;
+                  try { await layer.player!.setVolume(layerTarget); } catch (_) {}
+                }
+              }
+            }
+            _safeNotify();
+          }
+        });
+      } else {
+        _prefs?.remove(_keyTimerEndTime);
+      }
+    } catch (e) {
+      debugPrint('Timer restore error: $e');
+    }
   }
 
   void _safeNotify() {
@@ -123,7 +194,16 @@ class AudioProvider extends ChangeNotifier {
   double get masterVolume => _masterVolume;
   int? get timerMinutes => _timerMinutes;
   int? get timerRemainingSeconds => _timerRemainingSeconds;
+  int? get timerTotalSeconds => _timerTotalSeconds;
+  double? get fadeProgress {
+    if (_isInFadeOut && _timerRemainingSeconds != null) {
+      return (_timerRemainingSeconds! / 30.0).clamp(0.0, 1.0);
+    }
+    return null;
+  }
+  bool get isInFadeOut => _isInFadeOut;
   bool get timerExplicitlyCleared => _timerExplicitlyCleared;
+  int get layerCount => _soundLayers.length;
   List<SoundLayer> get soundLayers => List.unmodifiable(_soundLayers);
   String? get errorMessage => _errorMessage;
   Map<String, int> get playCounts => Map.unmodifiable(_playCounts);
@@ -138,6 +218,28 @@ class AudioProvider extends ChangeNotifier {
     try {
       _mainPlayer = AudioPlayer();
       await _mainPlayer!.setLoopMode(LoopMode.one);
+      _mainPlayer!.playerStateStream.listen((state) {
+        if (_isDisposed) return;
+        final isBufferingNow = state.processingState == ProcessingState.loading ||
+            state.processingState == ProcessingState.buffering;
+        final isPlayingNow = state.playing &&
+            state.processingState != ProcessingState.completed;
+
+        bool changed = false;
+        if (_isBuffering != isBufferingNow) {
+          _isBuffering = isBufferingNow;
+          changed = true;
+        }
+        // Only update _isPlaying from the stream when not actively buffering
+        // to avoid fighting with the explicit state set in _playMainSound().
+        if (_isPlaying != isPlayingNow && !_isBuffering) {
+          _isPlaying = isPlayingNow;
+          changed = true;
+        }
+        if (changed) {
+          _safeNotify();
+        }
+      });
     } catch (e) {
       debugPrint('Failed to initialize main player: $e');
     }
@@ -167,53 +269,120 @@ class AudioProvider extends ChangeNotifier {
     }
   }
 
+  Future<void> loadPreset({
+    required SoundType mainSound,
+    required List<({SoundType sound, double volume})> layers,
+    double masterVolume = 0.70,
+  }) async {
+    await _initFuture;
+    for (final layer in _soundLayers) {
+      if (layer.player != null) {
+        try {
+          await layer.player!.stop();
+          await layer.player!.dispose();
+        } catch (_) {}
+      }
+    }
+    _soundLayers.clear();
+    if (_mainPlayer != null) {
+      try {
+        await _mainPlayer!.stop();
+      } catch (_) {}
+    }
+
+    _masterVolume = masterVolume;
+    _currentSound = mainSound;
+    _currentVariantIndex = 0;
+
+    for (final l in layers) {
+      await addSoundLayer(l.sound);
+      if (_soundLayers.isNotEmpty) {
+        setLayerVolume(_soundLayers.length - 1, l.volume);
+      }
+    }
+    // Do NOT call play() here — the caller pushes SoundPlaying which
+    // calls selectAndPlay() on mount, preventing double play-count.
+    _safeNotify();
+  }
+
   Future<void> _playMainSound() async {
     await _initFuture;
     if (_mainPlayer == null) return;
+
+    // Increment generation so any concurrent in-progress load sees a mismatch
+    // and aborts at the next await point — the newest call always wins.
+    final int thisGeneration = ++_loadGeneration;
 
     _isBuffering = true;
     _safeNotify();
 
     final bool wasPlaying = _isPlaying;
     int retryCount = 0;
-    while (retryCount < _currentSound.variantCount) {
-      try {
-        _errorMessage = null;
-        final assetPath = _currentSound.audioAssetPaths[_currentVariantIndex];
-        await _mainPlayer!.setAsset(assetPath);
-        await _mainPlayer!.setVolume(_masterVolume);
-        await _mainPlayer!.play();
-        _isPlaying = true;
-        _isBuffering = false;
-        if (!wasPlaying) {
-          await _recordPlay(_currentSound.id);
-        }
-        _audioHandler?.updateState(
-          playing: true,
-          title: _currentSound.title,
-          subtitle: _currentSound.description,
-        );
-        _safeNotify();
-        return;
-      } catch (e) {
-        retryCount++;
-        if (retryCount < _currentSound.variantCount) {
-          _currentVariantIndex =
-              (_currentVariantIndex + 1) % _currentSound.variantCount;
-        } else {
-          _errorMessage = "Couldn't load sound file after trying variants: $e";
-          _isPlaying = false;
+    try {
+      while (retryCount < _currentSound.variantCount) {
+        if (_loadGeneration != thisGeneration) return; // Abort: newer call won
+        try {
+          _errorMessage = null;
+          final assetPath = _currentSound.audioAssetPaths[_currentVariantIndex];
+
+          // Cleanly stop previous player session to flush buffers & avoid Android Opus decoder collisions
+          try { await _mainPlayer!.stop(); } catch (_) {}
+          if (_loadGeneration != thisGeneration) return; // Abort check after await
+
+          await _mainPlayer!.setAsset(assetPath);
+          if (_loadGeneration != thisGeneration) return; // Abort check after await
+
+          await _mainPlayer!.setVolume(_masterVolume);
+          if (_loadGeneration != thisGeneration) return; // Abort check after await
+
+          await _mainPlayer!.play();
+          if (_loadGeneration != thisGeneration) return; // Abort check after await
+
+          _isPlaying = true;
           _isBuffering = false;
+          if (!wasPlaying) {
+            await _recordPlay(_currentSound.id);
+          }
+          _audioHandler?.updateState(
+            playing: true,
+            title: _currentSound.title,
+            subtitle: _currentSound.description,
+          );
           _safeNotify();
           return;
+        } catch (e) {
+          if (_loadGeneration != thisGeneration) return; // Abort on error too
+          retryCount++;
+          if (retryCount < _currentSound.variantCount) {
+            _currentVariantIndex =
+                (_currentVariantIndex + 1) % _currentSound.variantCount;
+          } else {
+            _errorMessage = "Couldn't load sound file after trying variants: $e";
+            _isPlaying = false;
+            _isBuffering = false;
+            _safeNotify();
+            return;
+          }
         }
       }
+    } finally {
+      // Only clean up if this generation is still current — a newer call
+      // will manage its own state.
+      if (_loadGeneration == thisGeneration) {
+        _isBuffering = false;
+        _safeNotify();
+      }
     }
-    _isBuffering = false;
-    _safeNotify();
   }
 
   Future<void> togglePlayPause() async {
+    if (_isBuffering) {
+      // Cancel the in-progress load and pause cleanly
+      _loadGeneration++;
+      _isBuffering = false;
+      await pause();
+      return;
+    }
     if (_isPlaying) {
       await pause();
     } else {
@@ -311,13 +480,8 @@ class AudioProvider extends ChangeNotifier {
   }
 
   Future<void> setMasterVolume(double vol) async {
+    if (_isInFadeOut) return; // Block volume adjustments during timer fade-out
     _masterVolume = vol.clamp(0.0, 1.0);
-    if (_isInFadeOut) {
-      _preFadeVolume = _masterVolume;
-      for (final layer in _soundLayers) {
-        layer.preFadeVolume = layer.volume;
-      }
-    }
     if (_mainPlayer != null) {
       try {
         await _mainPlayer!.setVolume(_masterVolume);
@@ -379,6 +543,19 @@ class AudioProvider extends ChangeNotifier {
     }
   }
 
+  Future<void> clearAllLayers() async {
+    for (final layer in _soundLayers) {
+      if (layer.player != null) {
+        try {
+          await layer.player!.stop();
+          await layer.player!.dispose();
+        } catch (_) {}
+      }
+    }
+    _soundLayers.clear();
+    _safeNotify();
+  }
+
   Future<void> toggleSoundLayer(SoundType sound) async {
     final index = _soundLayers.indexWhere((l) => l.soundType.id == sound.id);
     if (index >= 0) {
@@ -409,7 +586,21 @@ class AudioProvider extends ChangeNotifier {
     _timerExplicitlyCleared = (minutes == null);
     _timerMinutes = minutes;
     if (minutes == null) {
+      // Bug #4: Restore volumes if timer was cleared during fade-out
+      if (_isInFadeOut) {
+        _masterVolume = _preFadeVolume;
+        if (_mainPlayer != null) {
+          try { _mainPlayer!.setVolume(_masterVolume); } catch (_) {}
+        }
+        for (final layer in _soundLayers) {
+          layer.volume = layer.preFadeVolume;
+          if (layer.player != null) {
+            try { layer.player!.setVolume(layer.preFadeVolume); } catch (_) {}
+          }
+        }
+      }
       _timerRemainingSeconds = null;
+      _timerTotalSeconds = null;
       _isInFadeOut = false;
       _prefs?.remove(_keyTimerEndTime);
       _safeNotify();
@@ -421,6 +612,7 @@ class AudioProvider extends ChangeNotifier {
       layer.preFadeVolume = layer.volume;
     }
     _timerRemainingSeconds = minutes * 60;
+    _timerTotalSeconds = minutes * 60;
     _isInFadeOut = false;
     
     final endTime = DateTime.now().add(Duration(minutes: minutes));
@@ -438,12 +630,19 @@ class AudioProvider extends ChangeNotifier {
         timer.cancel();
         _timerMinutes = null;
         _timerRemainingSeconds = null;
+        _timerTotalSeconds = null;
         _isInFadeOut = false;
         _prefs?.remove(_keyTimerEndTime);
         
         await pause();
-        await setMasterVolume(_preFadeVolume);
+        _masterVolume = _preFadeVolume;
+        if (_mainPlayer != null) {
+          try {
+            await _mainPlayer!.setVolume(_masterVolume);
+          } catch (_) {}
+        }
         for (final layer in _soundLayers) {
+          layer.volume = layer.preFadeVolume;
           if (layer.player != null) {
             try {
               await layer.player!.setVolume(layer.preFadeVolume);
@@ -462,17 +661,19 @@ class AudioProvider extends ChangeNotifier {
         if (_timerRemainingSeconds! <= 30 && _preFadeVolume > 0) {
           _isInFadeOut = true;
           final fadeFactor = _timerRemainingSeconds! / 30.0;
-          final targetVolume = _preFadeVolume * fadeFactor;
+          final targetVolume = (_preFadeVolume * fadeFactor).clamp(0.0, 1.0);
+          _masterVolume = targetVolume;
           if (_mainPlayer != null) {
             try {
-              await _mainPlayer!.setVolume(targetVolume.clamp(0.0, 1.0));
+              await _mainPlayer!.setVolume(targetVolume);
             } catch (_) {}
           }
           for (final layer in _soundLayers) {
             if (layer.player != null) {
-              final layerTarget = layer.preFadeVolume * fadeFactor;
+              final layerTarget = (layer.preFadeVolume * fadeFactor).clamp(0.0, 1.0);
+              layer.volume = layerTarget;
               try {
-                await layer.player!.setVolume(layerTarget.clamp(0.0, 1.0));
+                await layer.player!.setVolume(layerTarget);
               } catch (_) {}
             }
           }
@@ -487,6 +688,7 @@ class AudioProvider extends ChangeNotifier {
     _countdownTimer = null;
     _timerMinutes = null;
     _timerRemainingSeconds = null;
+    _timerTotalSeconds = null;
     _isInFadeOut = false;
     _prefs?.remove(_keyTimerEndTime);
   }
