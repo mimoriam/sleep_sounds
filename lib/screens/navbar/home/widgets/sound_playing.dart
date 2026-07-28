@@ -35,9 +35,7 @@ class _SoundPlayingState extends State<SoundPlaying> {
 
       audio.updateSettings(notificationsEnabled: settings.notificationsEnabled);
 
-      if (audio.currentSound.id != widget.sound.id) {
-        audio.selectAndPlay(widget.sound, variantIndex: widget.variantIndex);
-      }
+      audio.selectAndPlay(widget.sound, variantIndex: widget.variantIndex);
 
       if (audio.timerMinutes == null &&
           !audio.timerExplicitlyCleared &&
@@ -52,12 +50,7 @@ class _SoundPlayingState extends State<SoundPlaying> {
       context: context,
       backgroundColor: AppColors.card(context),
       isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(24),
-          topRight: Radius.circular(24),
-        ),
-      ),
+      useSafeArea: true,
       builder: (context) {
         return const _TimerBottomSheet();
       },
@@ -69,12 +62,7 @@ class _SoundPlayingState extends State<SoundPlaying> {
       context: context,
       backgroundColor: AppColors.card(context),
       isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(24),
-          topRight: Radius.circular(24),
-        ),
-      ),
+      useSafeArea: true,
       builder: (context) {
         return const _AddSoundBottomSheet();
       },

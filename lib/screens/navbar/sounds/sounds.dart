@@ -195,7 +195,6 @@ class _SoundsScreenState extends State<SoundsScreen> {
                             margin: const EdgeInsets.only(bottom: 12),
                             child: Material(
                               color: AppColors.card(context),
-                              borderRadius: BorderRadius.circular(16),
                               clipBehavior: Clip.antiAlias,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(16),
@@ -282,7 +281,6 @@ class _SoundsScreenState extends State<SoundsScreen> {
                               ),
                               onTap: () {
                                 HapticFeedback.lightImpact();
-                                audio.selectAndPlay(sound);
                                 Navigator.push(
                                   context,
                                   SlideUpFadeRoute(

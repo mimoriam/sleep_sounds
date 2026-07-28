@@ -160,7 +160,6 @@ class FavouriteScreen extends StatelessWidget {
                             margin: const EdgeInsets.only(bottom: 12),
                             child: Material(
                               color: AppColors.card(context),
-                              borderRadius: BorderRadius.circular(16),
                               clipBehavior: Clip.antiAlias,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(16),
@@ -251,7 +250,6 @@ class FavouriteScreen extends StatelessWidget {
                               ),
                               onTap: () {
                                 HapticFeedback.lightImpact();
-                                audio.selectAndPlay(sound);
                                 Navigator.push(
                                   context,
                                   SlideUpFadeRoute(

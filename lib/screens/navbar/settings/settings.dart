@@ -243,7 +243,6 @@ class SettingsScreen extends StatelessWidget {
   Widget _buildCardContainer(BuildContext context, List<Widget> children) {
     return Material(
       color: AppColors.card(context),
-      borderRadius: BorderRadius.circular(AppThemes.borderRadiusCard),
       clipBehavior: Clip.antiAlias,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppThemes.borderRadiusCard),

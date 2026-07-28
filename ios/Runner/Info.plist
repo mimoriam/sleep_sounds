@@ -70,5 +70,9 @@
 	<array>
 		<string>audio</string>
 	</array>
+	<key>UIStatusBarHidden</key>
+	<true/>
+	<key>NSUserNotificationsUsageDescription</key>
+	<string>Sleep Sounds would like to send you notifications for sleep timer alerts and reminders.</string>
 </dict>
 </plist>
