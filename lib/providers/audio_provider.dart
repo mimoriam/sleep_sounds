@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:screen_brightness/screen_brightness.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/sound_model.dart';
 import '../services/audio_handler.dart';
@@ -316,7 +317,6 @@ class AudioProvider extends ChangeNotifier {
     _isBuffering = true;
     _safeNotify();
 
-    final bool wasPlaying = _isPlaying;
     int retryCount = 0;
     try {
       while (retryCount < _currentSound.variantCount) {
@@ -340,9 +340,7 @@ class AudioProvider extends ChangeNotifier {
 
           _isPlaying = true;
           _isBuffering = false;
-          if (!wasPlaying) {
-            await _recordPlay(_currentSound.id);
-          }
+          await _recordPlay(_currentSound.id);
           _audioHandler?.updateState(
             playing: true,
             title: _currentSound.title,
@@ -634,6 +632,10 @@ class AudioProvider extends ChangeNotifier {
         _isInFadeOut = false;
         _prefs?.remove(_keyTimerEndTime);
         
+        try {
+          await ScreenBrightness().resetScreenBrightness();
+        } catch (_) {}
+
         await pause();
         _masterVolume = _preFadeVolume;
         if (_mainPlayer != null) {
@@ -657,7 +659,7 @@ class AudioProvider extends ChangeNotifier {
       } else {
         _timerRemainingSeconds = _timerRemainingSeconds! - 1;
 
-        // Gradual 30-second volume fade out before ending
+        // Gradual 30-second volume & screen brightness fade out before ending
         if (_timerRemainingSeconds! <= 30 && _preFadeVolume > 0) {
           _isInFadeOut = true;
           final fadeFactor = _timerRemainingSeconds! / 30.0;
@@ -677,6 +679,10 @@ class AudioProvider extends ChangeNotifier {
               } catch (_) {}
             }
           }
+          try {
+            final targetBrightness = (0.01 + (0.3 * fadeFactor)).clamp(0.01, 1.0);
+            await ScreenBrightness().setScreenBrightness(targetBrightness);
+          } catch (_) {}
         }
         _safeNotify();
       }
@@ -691,6 +697,9 @@ class AudioProvider extends ChangeNotifier {
     _timerTotalSeconds = null;
     _isInFadeOut = false;
     _prefs?.remove(_keyTimerEndTime);
+    try {
+      ScreenBrightness().resetScreenBrightness();
+    } catch (_) {}
   }
 
   @override
