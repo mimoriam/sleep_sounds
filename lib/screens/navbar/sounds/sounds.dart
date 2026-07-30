@@ -5,10 +5,12 @@ import '../../../models/sound_category.dart';
 import '../../../models/sound_model.dart';
 import '../../../providers/audio_provider.dart';
 import '../../../providers/favorites_provider.dart';
+import '../../../services/subscription_service.dart';
 import '../../../utils/app_colors.dart';
 import '../../../utils/app_themes.dart';
 import '../../../utils/page_transitions.dart';
 import '../home/widgets/sound_playing.dart';
+import '../profile/widgets/premium.dart';
 
 class SoundsScreen extends StatefulWidget {
   const SoundsScreen({super.key});
@@ -32,6 +34,8 @@ class _SoundsScreenState extends State<SoundsScreen> {
   Widget build(BuildContext context) {
     final favorites = context.watch<FavoritesProvider>();
     final audio = context.watch<AudioProvider>();
+    final subscription = context.watch<SubscriptionService>();
+    final isPremUser = subscription.isPremium;
 
     var filteredSounds = SoundRegistry.getByCategory(_selectedCategory);
     if (_searchQuery.trim().isNotEmpty) {
@@ -187,6 +191,7 @@ class _SoundsScreenState extends State<SoundsScreen> {
                         itemCount: filteredSounds.length,
                         itemBuilder: (context, index) {
                           final sound = filteredSounds[index];
+                          final isLocked = sound.isPremium && !isPremUser;
                           final isCurrentPlaying =
                               audio.currentSound.id == sound.id &&
                                   audio.isPlaying;
@@ -211,28 +216,70 @@ class _SoundsScreenState extends State<SoundsScreen> {
                                 horizontal: 12,
                                 vertical: 4,
                               ),
-                              leading: ClipRRect(
-                                borderRadius: BorderRadius.circular(12),
-                                child: SizedBox(
-                                  width: 52,
-                                  height: 52,
-                                  child: sound.imagePath != null
-                                      ? Image.asset(
-                                          sound.imagePath!,
-                                          fit: BoxFit.cover,
-                                          errorBuilder: (c, e, s) =>
-                                              _buildIconPlaceholder(context, sound.icon),
-                                        )
-                                      : _buildIconPlaceholder(context, sound.icon),
-                                ),
+                              leading: Stack(
+                                children: [
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(12),
+                                    child: SizedBox(
+                                      width: 52,
+                                      height: 52,
+                                      child: sound.imagePath != null
+                                          ? Image.asset(
+                                              sound.imagePath!,
+                                              fit: BoxFit.cover,
+                                              errorBuilder: (c, e, s) =>
+                                                  _buildIconPlaceholder(context, sound.icon),
+                                            )
+                                          : _buildIconPlaceholder(context, sound.icon),
+                                    ),
+                                  ),
+                                  if (isLocked)
+                                    Positioned.fill(
+                                      child: Container(
+                                        decoration: BoxDecoration(
+                                          color: Colors.black.withValues(alpha: 0.45),
+                                          borderRadius: BorderRadius.circular(12),
+                                        ),
+                                        child: const Icon(
+                                          Icons.lock_rounded,
+                                          color: AppColors.primaryCyan,
+                                          size: 22,
+                                        ),
+                                      ),
+                                    ),
+                                ],
                               ),
-                              title: Text(
-                                sound.title,
-                                style: TextStyle(
-                                  color: AppColors.text(context),
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                ),
+                              title: Row(
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      sound.title,
+                                      style: TextStyle(
+                                        color: AppColors.text(context),
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16,
+                                      ),
+                                    ),
+                                  ),
+                                  if (isLocked) ...[
+                                    const SizedBox(width: 4),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.primaryCyan.withValues(alpha: 0.15),
+                                        borderRadius: BorderRadius.circular(6),
+                                      ),
+                                      child: const Text(
+                                        'PRO',
+                                        style: TextStyle(
+                                          color: AppColors.primaryCyan,
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ],
                               ),
                               subtitle: Text(
                                 sound.description,
@@ -265,13 +312,20 @@ class _SoundsScreenState extends State<SoundsScreen> {
                                     icon: Icon(
                                       isCurrentPlaying
                                           ? Icons.pause_circle_filled_rounded
-                                          : Icons.play_circle_fill_rounded,
+                                          : (isLocked ? Icons.lock_outline_rounded : Icons.play_circle_fill_rounded),
                                       color: AppColors.primaryCyan,
                                       size: 32,
                                     ),
                                     onPressed: () {
                                       HapticFeedback.lightImpact();
-                                      if (isCurrentPlaying) {
+                                      if (isLocked) {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) => const PremiumScreen(),
+                                          ),
+                                        );
+                                      } else if (isCurrentPlaying) {
                                         audio.pause();
                                       } else {
                                         audio.selectAndPlay(sound);

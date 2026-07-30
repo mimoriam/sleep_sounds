@@ -10,6 +10,7 @@ import 'screens/navbar/navbar.dart';
 import 'screens/onboarding/onboarding.dart';
 import 'services/audio_handler.dart';
 import 'services/notification_service.dart';
+import 'services/subscription_service.dart';
 import 'utils/app_themes.dart';
 
 void main() async {
@@ -20,6 +21,7 @@ void main() async {
 
   final prefs = await SharedPreferences.getInstance();
   await NotificationService.init();
+  await SubscriptionService().initialize();
 
   SleepAudioHandler? audioHandler;
   try {
@@ -34,6 +36,7 @@ void main() async {
         ChangeNotifierProvider(create: (_) => SettingsProvider(prefs)),
         ChangeNotifierProvider(create: (_) => FavoritesProvider(prefs)),
         ChangeNotifierProvider(create: (_) => PresetsProvider(prefs)),
+        ChangeNotifierProvider.value(value: SubscriptionService()),
         ChangeNotifierProvider(
           create: (_) => AudioProvider(audioHandler: audioHandler),
         ),

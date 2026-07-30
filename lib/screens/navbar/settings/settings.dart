@@ -3,6 +3,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 import '../../../providers/settings_provider.dart';
 import '../../../services/permission_service.dart';
+import '../../../services/subscription_service.dart';
 import '../../../utils/app_colors.dart';
 import '../../../utils/app_themes.dart';
 import '../profile/widgets/premium.dart';
@@ -13,6 +14,8 @@ class SettingsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final settings = context.watch<SettingsProvider>();
+    final subscription = context.watch<SubscriptionService>();
+    final isPremium = subscription.isPremium;
 
     return Scaffold(
       backgroundColor: AppColors.background(context),
@@ -176,17 +179,17 @@ class SettingsScreen extends StatelessWidget {
               const SizedBox(height: 12),
               _buildCardContainer(context, [
                 ListTile(
-                  leading: const Icon(
-                    Icons.workspace_premium_outlined,
+                  leading: Icon(
+                    isPremium ? Icons.workspace_premium_rounded : Icons.workspace_premium_outlined,
                     color: AppColors.primaryCyan,
                   ),
                   title: Text(
                     'Premium Pass',
-                    style: TextStyle(color: AppColors.text(context)),
+                    style: TextStyle(color: AppColors.text(context), fontWeight: FontWeight.w600),
                   ),
-                  subtitle: const Text(
-                    'Coming Soon • All sounds currently free',
-                    style: TextStyle(
+                  subtitle: Text(
+                    isPremium ? 'Premium Active • All sounds unlocked' : 'Upgrade to access 14 premium sounds',
+                    style: const TextStyle(
                       color: AppColors.primaryCyan,
                       fontSize: 12,
                     ),
@@ -202,6 +205,32 @@ class SettingsScreen extends StatelessWidget {
                         builder: (context) => const PremiumScreen(),
                       ),
                     );
+                  },
+                ),
+                _buildDivider(context),
+                ListTile(
+                  leading: Icon(
+                    Icons.restore_rounded,
+                    color: AppColors.textMuted(context),
+                  ),
+                  title: Text(
+                    'Restore Purchases',
+                    style: TextStyle(color: AppColors.text(context)),
+                  ),
+                  onTap: () async {
+                    final restored = await subscription.restorePurchases();
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            restored
+                                ? 'Purchases restored successfully!'
+                                : 'No active subscriptions found.',
+                          ),
+                          behavior: SnackBarBehavior.floating,
+                        ),
+                      );
+                    }
                   },
                 ),
                 _buildDivider(context),

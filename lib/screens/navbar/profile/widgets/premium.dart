@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../../../services/subscription_service.dart';
 import '../../../../utils/app_colors.dart';
 import '../../../../utils/app_themes.dart';
 
@@ -11,6 +13,48 @@ class PremiumScreen extends StatefulWidget {
 
 class _PremiumScreenState extends State<PremiumScreen> {
   int _selectedPlanIndex = 1; // Default to Yearly (index 1)
+  bool _isRestoring = false;
+  SubscriptionService? _service;
+  bool _wasPremium = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _service = context.read<SubscriptionService>();
+      _wasPremium = _service?.isPremium ?? false;
+      _service?.addListener(_onSubscriptionChanged);
+      _service?.onPurchaseError = (msg) {
+        if (!mounted || msg.isEmpty) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(msg),
+            backgroundColor: AppColors.cardColor,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      };
+    });
+  }
+
+  void _onSubscriptionChanged() {
+    if (!mounted || _service == null) return;
+    final isPrem = _service!.isPremium;
+    if (!_wasPremium && isPrem) {
+      _wasPremium = true;
+      _showSubscriptionSuccess();
+    }
+  }
+
+  @override
+  void dispose() {
+    if (_service != null) {
+      _service!.removeListener(_onSubscriptionChanged);
+      _service!.onPurchaseError = null;
+    }
+    super.dispose();
+  }
 
   void _showSubscriptionSuccess() {
     showDialog(
@@ -57,7 +101,7 @@ class _PremiumScreenState extends State<PremiumScreen> {
               GestureDetector(
                 onTap: () {
                   Navigator.of(context).pop(); // Close Dialog
-                  Navigator.of(context).pop(); // Go back to Profile Screen
+                  Navigator.of(context).pop(); // Go back
                 },
                 child: Container(
                   height: 44,
@@ -86,8 +130,58 @@ class _PremiumScreenState extends State<PremiumScreen> {
     );
   }
 
+  Future<void> _handleBuy(SubscriptionService service) async {
+    final monthly = service.monthlyProduct;
+    final yearly = service.yearlyProduct;
+
+    final targetProduct = _selectedPlanIndex == 0 ? monthly : yearly;
+
+    if (targetProduct != null) {
+      try {
+        await service.buySubscription(targetProduct);
+      } catch (e) {
+        debugPrint('[PremiumScreen] buy error: $e');
+      }
+    } else {
+      // Fallback if product details haven't arrived from store yet
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Connecting to store... Please try again in a moment.'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      service.fetchProducts();
+    }
+  }
+
+  Future<void> _handleRestore(SubscriptionService service) async {
+    setState(() => _isRestoring = true);
+    final restored = await service.restorePurchases();
+    if (mounted) {
+      setState(() => _isRestoring = false);
+      if (restored) {
+        _showSubscriptionSuccess();
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('No active subscriptions found to restore.'),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final service = context.watch<SubscriptionService>();
+    final isPremium = service.isPremium;
+    final monthly = service.monthlyProduct;
+    final yearly = service.yearlyProduct;
+
+    final monthlyPriceStr = monthly?.price ?? '\$2.99';
+    final yearlyPriceStr = yearly?.price ?? '\$19.99';
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.transparent,
@@ -97,9 +191,9 @@ class _PremiumScreenState extends State<PremiumScreen> {
           icon: const Icon(Icons.arrow_back, color: Colors.white, size: 24),
           onPressed: () => Navigator.of(context).pop(),
         ),
-        title: const Text(
-          'Free Premium',
-          style: TextStyle(
+        title: Text(
+          isPremium ? 'Premium Pass' : 'Unlock Premium',
+          style: const TextStyle(
             color: Colors.white,
             fontSize: 20,
             fontWeight: FontWeight.bold,
@@ -135,9 +229,9 @@ class _PremiumScreenState extends State<PremiumScreen> {
                     ),
                   ],
                 ),
-                child: const Center(
+                child: Center(
                   child: Icon(
-                    Icons.workspace_premium_outlined,
+                    isPremium ? Icons.workspace_premium_rounded : Icons.workspace_premium_outlined,
                     color: Colors.white,
                     size: 38,
                   ),
@@ -145,40 +239,58 @@ class _PremiumScreenState extends State<PremiumScreen> {
               ),
               const SizedBox(height: 16),
 
-              // Title
-              RichText(
-                textAlign: TextAlign.center,
-                text: const TextSpan(
+              if (isPremium) ...[
+                const Text(
+                  'Premium Active ✓',
                   style: TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
-                    fontFamily: 'Inter',
+                    color: AppColors.primaryCyan,
                   ),
-                  children: [
-                    TextSpan(
-                      text: 'Unlock ',
-                      style: TextStyle(color: Colors.white),
-                    ),
-                    TextSpan(
-                      text: 'Premium',
-                      style: TextStyle(color: AppColors.primaryCyan),
-                    ),
-                    TextSpan(
-                      text: ' Sounds',
-                      style: TextStyle(color: Colors.white),
-                    ),
-                  ],
                 ),
-              ),
-              const SizedBox(height: 6),
+                const SizedBox(height: 6),
+                Text(
+                  'You have unlocked all sleep music & relaxation sounds!\nPlan: ${service.activePlan.toUpperCase()}',
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(color: AppColors.textSecondary, fontSize: 13),
+                ),
+                const SizedBox(height: 24),
+              ] else ...[
+                // Title
+                RichText(
+                  textAlign: TextAlign.center,
+                  text: const TextSpan(
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'Inter',
+                    ),
+                    children: [
+                      TextSpan(
+                        text: 'Unlock ',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                      TextSpan(
+                        text: 'Premium',
+                        style: TextStyle(color: AppColors.primaryCyan),
+                      ),
+                      TextSpan(
+                        text: ' Sounds',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 6),
 
-              // Subtitle
-              const Text(
-                'Deeper sleep with our full library, ad-free.',
-                textAlign: TextAlign.center,
-                style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
-              ),
-              const SizedBox(height: 18),
+                // Subtitle
+                const Text(
+                  'Deeper sleep with our full library, ad-free.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
+                ),
+                const SizedBox(height: 18),
+              ],
 
               // Benefits Card
               Container(
@@ -192,7 +304,7 @@ class _PremiumScreenState extends State<PremiumScreen> {
                   children: [
                     _buildBenefitRow(
                       icon: Icons.shield_outlined,
-                      title: 'Unlimited Sound Library',
+                      title: 'Full 26+ Sound Library Unlocked',
                     ),
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 8.0),
@@ -203,7 +315,7 @@ class _PremiumScreenState extends State<PremiumScreen> {
                     ),
                     _buildBenefitRow(
                       icon: Icons.auto_awesome_outlined,
-                      title: 'Exclusive Premium Ambience',
+                      title: 'Sleep Music & Relaxation Categories',
                     ),
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 8.0),
@@ -213,81 +325,110 @@ class _PremiumScreenState extends State<PremiumScreen> {
                       ),
                     ),
                     _buildBenefitRow(
-                      icon: Icons.notifications_none_outlined,
-                      title: 'Ad-Free Listening',
+                      icon: Icons.music_note_rounded,
+                      title: 'Unlimited Layer Combinations',
                     ),
                   ],
                 ),
               ),
               const SizedBox(height: 16),
 
-              // Plans Selection Row
-              Row(
-                children: [
-                  Expanded(
-                    child: _buildPlanCard(
-                      index: 0,
-                      title: 'Monthly',
-                      price: '\$2.99/mo',
-                      period: 'Per month',
-                      isSelected: _selectedPlanIndex == 0,
-                      onTap: () {
-                        setState(() {
-                          _selectedPlanIndex = 0;
-                        });
-                      },
+              if (!isPremium) ...[
+                // Plans Selection Row
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildPlanCard(
+                        index: 0,
+                        title: 'Monthly',
+                        price: monthlyPriceStr,
+                        period: 'Per month',
+                        isSelected: _selectedPlanIndex == 0,
+                        onTap: () {
+                          setState(() {
+                            _selectedPlanIndex = 0;
+                          });
+                        },
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: _buildPlanCard(
-                      index: 1,
-                      title: 'Yearly',
-                      price: '\$2.99',
-                      period: 'Save 50%',
-                      isSelected: _selectedPlanIndex == 1,
-                      onTap: () {
-                        setState(() {
-                          _selectedPlanIndex = 1;
-                        });
-                      },
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: _buildPlanCard(
+                        index: 1,
+                        title: 'Yearly',
+                        price: yearlyPriceStr,
+                        period: 'Save 45%',
+                        isSelected: _selectedPlanIndex == 1,
+                        onTap: () {
+                          setState(() {
+                            _selectedPlanIndex = 1;
+                          });
+                        },
+                      ),
                     ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
+                  ],
+                ),
+                const SizedBox(height: 16),
 
-              // Action Button
-              GestureDetector(
-                onTap: _showSubscriptionSuccess,
-                child: Container(
-                  width: double.infinity,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(
-                      AppThemes.borderRadiusButton,
+                // Action Button
+                GestureDetector(
+                  onTap: service.isPurchasePending ? null : () => _handleBuy(service),
+                  child: Container(
+                    width: double.infinity,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(
+                        AppThemes.borderRadiusButton,
+                      ),
+                      gradient: AppColors.primaryButtonGradient,
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.primaryCyan.withValues(alpha: 0.25),
+                          blurRadius: 12,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
                     ),
-                    gradient: AppColors.primaryButtonGradient,
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppColors.primaryCyan.withValues(alpha: 0.25),
-                        blurRadius: 12,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: const Center(
-                    child: Text(
-                      'Start Free Trial',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
+                    child: Center(
+                      child: service.isPurchasePending
+                          ? const SizedBox(
+                              width: 22,
+                              height: 22,
+                              child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5),
+                            )
+                          : const Text(
+                              'Upgrade Now',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                     ),
                   ),
                 ),
+                const SizedBox(height: 12),
+              ],
+
+              // Restore Purchases button
+              TextButton(
+                onPressed: _isRestoring ? null : () => _handleRestore(service),
+                child: _isRestoring
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(color: AppColors.primaryCyan, strokeWidth: 2),
+                      )
+                    : const Text(
+                        'Restore Purchases',
+                        style: TextStyle(
+                          color: AppColors.primaryCyan,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
               ),
+              const SizedBox(height: 12),
             ],
           ),
         ),
@@ -298,7 +439,6 @@ class _PremiumScreenState extends State<PremiumScreen> {
   Widget _buildBenefitRow({required IconData icon, required String title}) {
     return Row(
       children: [
-        // Icon Box
         Container(
           width: 40,
           height: 40,
@@ -309,8 +449,6 @@ class _PremiumScreenState extends State<PremiumScreen> {
           child: Icon(icon, color: AppColors.primaryCyan, size: 22),
         ),
         const SizedBox(width: 16),
-
-        // Text
         Expanded(
           child: Text(
             title,
@@ -321,8 +459,6 @@ class _PremiumScreenState extends State<PremiumScreen> {
             ),
           ),
         ),
-
-        // Green Checkmark
         const Icon(Icons.check_rounded, color: Colors.tealAccent, size: 22),
       ],
     );
@@ -377,7 +513,7 @@ class _PremiumScreenState extends State<PremiumScreen> {
               price,
               style: TextStyle(
                 color: textColor,
-                fontSize: 24,
+                fontSize: 22,
                 fontWeight: FontWeight.bold,
               ),
             ),

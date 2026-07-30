@@ -23,6 +23,8 @@ class SoundType {
     required this.audioAssetPaths,
     this.tags = const [],
   });
+
+  bool get isPremium => category.isPremium;
 }
 
 class SoundRegistry {

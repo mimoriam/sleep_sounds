@@ -8,10 +8,12 @@ import '../../../../providers/audio_provider.dart';
 import '../../../../providers/favorites_provider.dart';
 import '../../../../providers/presets_provider.dart';
 import '../../../../providers/settings_provider.dart';
+import '../../../../services/subscription_service.dart';
 import '../../../../utils/app_colors.dart';
 import '../../../../utils/app_themes.dart';
 import '../../../../utils/page_transitions.dart';
 import '../../../breathing/breathing_exercise.dart';
+import '../../profile/widgets/premium.dart';
 import '../../../sleep_mode/sleep_mode.dart';
 
 class SoundPlaying extends StatefulWidget {
@@ -44,13 +46,17 @@ class _SoundPlayingState extends State<SoundPlaying>
       if (!mounted) return;
       final audio = context.read<AudioProvider>();
       final settings = context.read<SettingsProvider>();
+      final subscription = context.read<SubscriptionService>();
 
       audio.updateSettings(
         notificationsEnabled: settings.notificationsEnabled,
       );
 
-      if (audio.currentSound.id != widget.sound.id || (!audio.isPlaying && !audio.isBuffering)) {
-        audio.selectAndPlay(widget.sound, variantIndex: widget.variantIndex);
+      final isLocked = widget.sound.isPremium && !subscription.isPremium;
+      if (!isLocked) {
+        if (audio.currentSound.id != widget.sound.id || (!audio.isPlaying && !audio.isBuffering)) {
+          audio.selectAndPlay(widget.sound, variantIndex: widget.variantIndex);
+        }
       }
 
       // Bug #3 fix: Only auto-set timer; do NOT auto-navigate to Sleep Mode.
@@ -185,8 +191,9 @@ class _SoundPlayingState extends State<SoundPlaying>
   Widget build(BuildContext context) {
     final audio = context.watch<AudioProvider>();
     final favorites = context.watch<FavoritesProvider>();
+    final subscription = context.watch<SubscriptionService>();
     final isFav = favorites.isFavorite(audio.currentSound.id);
-
+    final isLocked = widget.sound.isPremium && !subscription.isPremium;
 
     final double screenHeight = MediaQuery.of(context).size.height;
     final bool isShortScreen = screenHeight < 760;
@@ -495,6 +502,40 @@ class _SoundPlayingState extends State<SoundPlaying>
                                 fontSize: 13,
                               ),
                             ),
+                            if (isLocked) ...[
+                              const SizedBox(height: 10),
+                              GestureDetector(
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(builder: (context) => const PremiumScreen()),
+                                  );
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.primaryCyan.withValues(alpha: 0.2),
+                                    borderRadius: BorderRadius.circular(20),
+                                    border: Border.all(color: AppColors.primaryCyan.withValues(alpha: 0.6)),
+                                  ),
+                                  child: const Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(Icons.workspace_premium_rounded, color: AppColors.primaryCyan, size: 18),
+                                      SizedBox(width: 6),
+                                      Text(
+                                        'Unlock Premium Sound',
+                                        style: TextStyle(
+                                          color: AppColors.primaryCyan,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 13,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ],
                             const SizedBox(height: 6),
                             FittedBox(
                               fit: BoxFit.scaleDown,

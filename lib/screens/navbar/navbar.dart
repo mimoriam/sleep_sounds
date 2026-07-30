@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../../providers/audio_provider.dart';
+import '../../services/subscription_service.dart';
 import '../../utils/app_colors.dart';
 import '../../utils/page_transitions.dart';
 import '../../utils/tab_notification.dart';
@@ -21,6 +22,28 @@ class Navbar extends StatefulWidget {
 
 class _NavbarState extends State<Navbar> {
   int _currentIndex = 0;
+  SubscriptionService? _subscriptionService;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _subscriptionService = context.read<SubscriptionService>();
+      _subscriptionService?.addListener(_onSubscriptionChanged);
+    });
+  }
+
+  void _onSubscriptionChanged() {
+    if (!mounted || _subscriptionService == null) return;
+    context.read<AudioProvider>().enforceSubscriptionStatus(_subscriptionService!.isPremium);
+  }
+
+  @override
+  void dispose() {
+    _subscriptionService?.removeListener(_onSubscriptionChanged);
+    super.dispose();
+  }
 
   final List<Widget> _screens = [
     const HomeScreen(),

@@ -215,6 +215,14 @@ class AudioProvider extends ChangeNotifier {
     _safeNotify();
   }
 
+  void enforceSubscriptionStatus(bool isPremium) {
+    if (!isPremium && _currentSound.isPremium && _isPlaying) {
+      stop();
+      _errorMessage = 'Your premium subscription has expired.';
+      _safeNotify();
+    }
+  }
+
   Future<void> _initMainPlayer() async {
     try {
       _mainPlayer = AudioPlayer();

@@ -13,4 +13,6 @@ enum SoundCategory {
   final IconData icon;
 
   const SoundCategory(this.label, this.icon);
+
+  bool get isPremium => this == SoundCategory.sleepMusic || this == SoundCategory.relaxation;
 }

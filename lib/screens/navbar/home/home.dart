@@ -9,6 +9,7 @@ import '../../../utils/app_themes.dart';
 import '../../../utils/page_transitions.dart';
 import '../../../utils/tab_notification.dart';
 import '../../breathing/breathing_exercise.dart';
+import '../../../services/subscription_service.dart';
 import 'widgets/sound_playing.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -626,6 +627,9 @@ class SoundCardWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final subscription = context.watch<SubscriptionService>();
+    final isLocked = sound.isPremium && !subscription.isPremium;
+
     return Container(
       width: width,
       height: height,
@@ -665,6 +669,23 @@ class SoundCardWidget extends StatelessWidget {
                 ),
               ),
             ),
+            if (isLocked)
+              Positioned(
+                top: 8,
+                right: 8,
+                child: Container(
+                  padding: const EdgeInsets.all(5),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.5),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.lock_rounded,
+                    color: AppColors.primaryCyan,
+                    size: 14,
+                  ),
+                ),
+              ),
             Padding(
               padding: const EdgeInsets.all(10.0),
               child: Column(
