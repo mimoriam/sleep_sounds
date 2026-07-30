@@ -1,4 +1,4 @@
-package com.example.sleep_sounds
+package xtra.app.sleepsounds
 
 import io.flutter.embedding.android.FlutterActivity
 
